@@ -15,6 +15,11 @@ export default function FeedbackPage() {
   const [flags, setFlags] = useState<FeatureFlags | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [topAlert, setTopAlert] = useState<string | null>(null);
+  const handleSuccess = (msg?: string) => {
+    setTopAlert(msg ?? "Feedback submitted.");
+    setTimeout(() => setTopAlert(null), 3500);
+  };
 
   useEffect(() => {
     const loadFlags = async (): Promise<void> => {
@@ -41,6 +46,18 @@ export default function FeedbackPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] overflow-hidden bg-blue-50/40 flex flex-col lg:flex-row">
+
+      {/* Top alert (fixed) */}
+      {topAlert && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="flex items-center gap-3 p-3 bg-green-600 text-white rounded-xl shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <div className="text-sm font-medium">{topAlert}</div>
+          </div>
+        </div>
+      )}
 
       {/* ── LEFT: Image panel (desktop only) ─────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 h-full shrink-0 relative flex-col overflow-hidden bg-gray-900">
@@ -109,7 +126,7 @@ export default function FeedbackPage() {
           {/* Form card */}
           {flags && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <FeedbackForm featureFlags={flags} />
+              <FeedbackForm featureFlags={flags} onSuccess={handleSuccess} />
             </div>
           )}
 

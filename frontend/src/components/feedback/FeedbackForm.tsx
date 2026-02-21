@@ -14,7 +14,6 @@
 
 import { useState, useEffect } from "react";
 import { ApiClient } from "../../lib/ApiClient";
-import SentimentResultCard from "./SentimentResultCard";
 import { FeedbackFormProps, SubmitFeedbackPayload, FeedbackResult } from "../../types";
 
 // ─── Feature flag config ─────────────────────────────────────────────────────
@@ -57,6 +56,13 @@ function isTodayWeekend(): boolean {
   return day === 0 || day === 6;
 }
 
+// Returns true if the given date string (YYYY-MM-DD) is a working day (Mon-Fri)
+function isWorkingDay(dateStr: string): boolean {
+  const d = new Date(dateStr + "T12:00:00");
+  const day = d.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  return day >= 1 && day <= 5;
+}
+
 // Returns "YYYY-MM-DD" for the previous working day (Mon→Fri, skips weekends)
 function getPreviousWorkingDay(): string {
   const now = new Date();
@@ -66,6 +72,14 @@ function getPreviousWorkingDay(): string {
   if (day === 0) daysBack = 2; // Sunday → back to Friday
   const prev = new Date(now);
   prev.setDate(prev.getDate() - daysBack);
+  return prev.toISOString().slice(0, 10);
+}
+
+// Returns the previous calendar day (always yesterday)
+function getPreviousDay(): string {
+  const now = new Date();
+  const prev = new Date(now);
+  prev.setDate(prev.getDate() - 1);
   return prev.toISOString().slice(0, 10);
 }
 
@@ -162,7 +176,7 @@ function SectionCard({
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
+export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormProps) {
   // Merge flag prop values into the config (runtime overrides compile-time defaults)
   const CONFIG = {
     enableDriver:  DEFAULT_CONFIG.enableDriver,
@@ -182,9 +196,12 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
 
   // ─── Feedback date selection ─────────────────────────────────
   const todayDate    = getTodayDate();
+  const prevDate     = getPreviousDay();
   const prevWorkDay  = getPreviousWorkingDay();
   const isWeekend    = isTodayWeekend();
-  const [selectedDate, setSelectedDate] = useState<string>(isWeekend ? prevWorkDay : todayDate);
+  const [selectedDate, setSelectedDate] = useState<string>(todayDate);
+  const todayIsWorking = isWorkingDay(todayDate);
+  const prevIsWorking = isWorkingDay(prevDate);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [result,       setResult]       = useState<FeedbackResult | null>(null);
@@ -277,6 +294,12 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
     // Log the final JSON payload (simulating API call structure)
     console.log("[FeedbackForm] Submitting payload:", JSON.stringify(payload, null, 2));
 
+    // Prevent submissions on non-working days
+    if (!isWorkingDay(selectedDate)) {
+      setError("Feedback can only be submitted for working days (Mon–Fri). Please try on a working day.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -300,6 +323,12 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
         driverRating: 0, driverComment: "",
         marshalRating: 0, marshalComment: "",
       }));
+      // Notify parent (page) to show global/top alert
+      try {
+        onSuccess?.("Feedback submitted.");
+      } catch {
+        /* ignore callback errors */
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit feedback.");
     } finally {
@@ -332,31 +361,33 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
             Feedback For <span className="text-red-400">*</span>
           </label>
           <p className="text-xs text-amber-600 mb-2">Feedback for weekdays (Mon–Fri) only.</p>
+          {!todayIsWorking && !prevIsWorking && (
+            <div className="mb-2 text-sm text-amber-700">Both options fall on a weekend; feedback is disabled until a working day.</div>
+          )}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setSelectedDate(todayDate)}
-              disabled={isWeekend}
+              disabled={!todayIsWorking}
               className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
-                isWeekend
-                  ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                  : selectedDate === todayDate
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
-              }`}
+                selectedDate === todayDate
+                  ? "bg-gray-900 text-white border-gray-900"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+              } ${!todayIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               Today - {formatDateLabel(todayDate)}
             </button>
             <button
               type="button"
-              onClick={() => setSelectedDate(prevWorkDay)}
+              onClick={() => setSelectedDate(prevDate)}
+              disabled={!prevIsWorking}
               className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
-                selectedDate === prevWorkDay
+                selectedDate === prevDate
                   ? "bg-gray-900 text-white border-gray-900"
                   : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
-              }`}
+              } ${!prevIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Prev Day - {formatDateLabel(prevWorkDay)}
+              Prev Day - {formatDateLabel(prevDate)}
             </button>
           </div>
         </div>
@@ -438,7 +469,7 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
         <div className="border-t border-gray-100 pt-4">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isWorkingDay(selectedDate)}
             className="w-full py-3.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
@@ -456,15 +487,7 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
 
       </form>
 
-      {/* ── Sentiment result ──────────────────────── */}
-      {result && (
-        <div className="mt-6">
-          <SentimentResultCard
-            result={result}
-            showDetails={featureFlags?.enableSentimentDetails ?? true}
-          />
-        </div>
-      )}
+      {/* Submission confirmation is handled by parent via onSuccess (top alert) */}
     </div>
   );
 }

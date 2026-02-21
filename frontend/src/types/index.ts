@@ -73,6 +73,7 @@ export interface Alert {
 
 export interface FeedbackFormProps {
   featureFlags: FeatureFlags;
+  onSuccess?: (message?: string) => void;
 }
 
 export interface SentimentResultProps {
