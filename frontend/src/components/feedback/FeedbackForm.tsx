@@ -51,6 +51,12 @@ function getTodayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Returns true if today is Saturday (6) or Sunday (0)
+function isTodayWeekend(): boolean {
+  const day = new Date().getDay();
+  return day === 0 || day === 6;
+}
+
 // Returns "YYYY-MM-DD" for the previous working day (Mon→Fri, skips weekends)
 function getPreviousWorkingDay(): string {
   const now = new Date();
@@ -110,6 +116,51 @@ function StarRating({ value, onChange, label }: StarRatingProps) {
   );
 }
 
+// ─── Section card (extracted to prevent re-mount on parent re-render) ────────
+const INPUT_CLASS =
+  "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent focus:bg-white outline-none transition text-gray-900 placeholder:text-gray-400 text-sm";
+
+function SectionCard({
+  title, emoji, ratingValue, commentValue, onRatingChange, onCommentChange, commentPlaceholder,
+}: {
+  title: string;
+  emoji: string;
+  ratingValue: number;
+  commentValue: string;
+  onRatingChange: (r: number) => void;
+  onCommentChange: (val: string) => void;
+  commentPlaceholder: string;
+}) {
+  return (
+    <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xl">{emoji}</span>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">{title}</h2>
+      </div>
+
+      <StarRating
+        value={ratingValue}
+        onChange={onRatingChange}
+        label="Tap a star to rate"
+      />
+
+      <div className="mt-4">
+        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+          Your comments <span className="text-red-400">*</span>
+        </label>
+        <textarea
+          value={commentValue}
+          onChange={(e) => onCommentChange(e.target.value)}
+          placeholder={commentPlaceholder}
+          rows={3}
+          className={`${INPUT_CLASS} resize-none`}
+        />
+        <p className="mt-1 text-xs text-gray-400 text-right">{commentValue.length} chars</p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ──────────────────────────────────────────────────────────
 export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
   // Merge flag prop values into the config (runtime overrides compile-time defaults)
@@ -132,7 +183,8 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
   // ─── Feedback date selection ─────────────────────────────────
   const todayDate    = getTodayDate();
   const prevWorkDay  = getPreviousWorkingDay();
-  const [selectedDate, setSelectedDate] = useState<string>(todayDate);
+  const isWeekend    = isTodayWeekend();
+  const [selectedDate, setSelectedDate] = useState<string>(isWeekend ? prevWorkDay : todayDate);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [result,       setResult]       = useState<FeedbackResult | null>(null);
@@ -255,44 +307,6 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
     }
   };
 
-  // ─── Section card helper ────────────────────────────────────
-  const SectionCard = ({
-    title, emoji, ratingKey, commentKey, commentPlaceholder,
-  }: {
-    title: string;
-    emoji: string;
-    ratingKey:       "driverRating" | "marshalRating";
-    commentKey:      "driverComment" | "marshalComment";
-    commentPlaceholder: string;
-  }) => (
-    <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">{emoji}</span>
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">{title}</h2>
-      </div>
-
-      <StarRating
-        value={formData[ratingKey]}
-        onChange={(r) => update(ratingKey, r)}
-        label="Tap a star to rate"
-      />
-
-      <div className="mt-4">
-        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-          Your comments <span className="text-red-400">*</span>
-        </label>
-        <textarea
-          value={formData[commentKey]}
-          onChange={(e) => update(commentKey, e.target.value)}
-          placeholder={commentPlaceholder}
-          rows={3}
-          className={`${inputClass} resize-none`}
-        />
-        <p className="mt-1 text-xs text-gray-400 text-right">{formData[commentKey].length} chars</p>
-      </div>
-    </div>
-  );
-
   // ─── Render ─────────────────────────────────────────────────
   return (
     <div>
@@ -307,7 +321,7 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
             id="userName" type="text"
             value={formData.userName}
             onChange={(e) => update("userName", e.target.value)}
-            placeholder="e.g. John Doe"
+            placeholder="Name"
             className={inputClass}
           />
         </div>
@@ -317,28 +331,32 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Feedback For <span className="text-red-400">*</span>
           </label>
+          <p className="text-xs text-amber-600 mb-2">Feedback for weekdays (Mon–Fri) only.</p>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setSelectedDate(todayDate)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
-                selectedDate === todayDate
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+              disabled={isWeekend}
+              className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
+                isWeekend
+                  ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                  : selectedDate === todayDate
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
               }`}
             >
-              Today — {formatDateLabel(todayDate)}
+              Today - {formatDateLabel(todayDate)}
             </button>
             <button
               type="button"
               onClick={() => setSelectedDate(prevWorkDay)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
+              className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
                 selectedDate === prevWorkDay
                   ? "bg-gray-900 text-white border-gray-900"
                   : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
               }`}
             >
-              Prev Day — {formatDateLabel(prevWorkDay)}
+              Prev Day - {formatDateLabel(prevWorkDay)}
             </button>
           </div>
         </div>
@@ -385,8 +403,10 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
           <SectionCard
             title="Rate your Driver"
             emoji="🧑‍✈️"
-            ratingKey="driverRating"
-            commentKey="driverComment"
+            ratingValue={formData.driverRating}
+            commentValue={formData.driverComment}
+            onRatingChange={(r) => update("driverRating", r)}
+            onCommentChange={(val) => update("driverComment", val)}
             commentPlaceholder="Was the driver polite, professional, on time? Any concerns?"
           />
         )}
@@ -396,8 +416,10 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
           <SectionCard
             title="Rate the Marshal"
             emoji="🦺"
-            ratingKey="marshalRating"
-            commentKey="marshalComment"
+            ratingValue={formData.marshalRating}
+            commentValue={formData.marshalComment}
+            onRatingChange={(r) => update("marshalRating", r)}
+            onCommentChange={(val) => update("marshalComment", val)}
             commentPlaceholder="How did the marshal handle boarding, safety checks, or assistance?"
           />
         )}
@@ -427,9 +449,6 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
             ) : (
               <>
                 Submit Feedback
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
               </>
             )}
           </button>

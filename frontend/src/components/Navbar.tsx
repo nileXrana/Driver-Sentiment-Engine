@@ -27,11 +27,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className={`${isHome ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-white border-b border-gray-200 shadow-sm"}`}>
+    <nav className={`${isHome ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "sticky top-0 z-50 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 shadow-lg"}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         {/* Logo / Title */}
         <Link href="/" className="flex items-center gap-2">
-          <span className={`text-base sm:text-xl font-bold truncate ${isHome ? "text-white" : "text-gray-900"}`}>
+          <span className={`text-base sm:text-xl font-bold truncate ${isHome ? "text-white" : "text-white"}`}>
             Driver Sentiment Engine
           </span>
         </Link>
@@ -39,7 +39,7 @@ export default function Navbar() {
         {/* Hamburger button — mobile only */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className={`sm:hidden p-2 rounded-lg transition ${isHome ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-100"}`}
+          className={`sm:hidden p-2 rounded-lg transition ${isHome ? "text-white hover:bg-white/10" : "text-white hover:bg-white/10"}`}
           aria-label="Toggle menu"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -57,10 +57,10 @@ export default function Navbar() {
             const isActive = pathname === link.href;
             const baseStyle = isHome
               ? "text-white/70 hover:bg-white/10 hover:text-white"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
+              : "text-white/60 hover:bg-white/10 hover:text-white";
             const activeStyle = isHome
               ? "bg-white/15 text-white"
-              : "bg-blue-100 text-blue-700";
+              : "bg-white/15 text-white";
 
             return (
               <Link
@@ -84,7 +84,7 @@ export default function Navbar() {
           {NAV_LINKS.map((link: NavLink) => {
             const isActive = pathname === link.href;
             const baseStyle = "text-gray-700 hover:bg-gray-100 hover:text-gray-900";
-            const activeStyle = "bg-blue-100 text-blue-700";
+            const activeStyle = "bg-gray-900 text-white";
 
             return (
               <Link
