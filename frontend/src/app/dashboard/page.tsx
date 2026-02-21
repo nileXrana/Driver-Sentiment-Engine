@@ -13,20 +13,19 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ApiClient } from "../../lib/ApiClient";
 import DriverTable from "../../components/dashboard/DriverTable";
 import ScoreChart from "../../components/dashboard/ScoreChart";
-import AlertList from "../../components/dashboard/AlertList";
-import { Driver, Alert, FeedbackHistoryItem } from "../../types";
+import { Driver, FeedbackHistoryItem } from "../../types";
 
 /** Refresh interval for auto-polling (10 seconds) */
 const REFRESH_INTERVAL_MS = 10000;
 
 export default function DashboardPage() {
+  const chartRef = useRef<HTMLDivElement>(null);
   // ─── State ─────────────────────────────────────
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
   const [selectedDriverFeedback, setSelectedDriverFeedback] = useState<FeedbackHistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,14 +37,8 @@ export default function DashboardPage() {
    */
   const fetchDashboardData = useCallback(async (): Promise<void> => {
     try {
-      // Fetch drivers and alerts in parallel for speed
-      const [driverData, alertData] = await Promise.all([
-        ApiClient.getAllDrivers(),
-        ApiClient.getAlerts(),
-      ]);
-
+      const driverData = await ApiClient.getAllDrivers();
       setDrivers(driverData);
-      setAlerts(alertData);
       setError("");
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
@@ -93,26 +86,31 @@ export default function DashboardPage() {
     } else {
       setSelectedDriverFeedback([]);
     }
+    // Scroll to chart after state updates
+    setTimeout(() => {
+      if (chartRef.current) {
+        chartRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
   };
 
   // ─── Summary Stats ────────────────────────────
   const totalDrivers = drivers.length;
-  const highRiskCount = drivers.filter((d: Driver) => d.riskLevel === "HIGH").length;
-  const avgScore = totalDrivers > 0
-    ? (drivers.reduce((sum: number, d: Driver) => sum + d.averageScore, 0) / totalDrivers).toFixed(1)
-    : "N/A";
+  const positiveCount = drivers.filter((d: Driver) => d.riskLevel === "LOW").length;
+  const neutralCount = drivers.filter((d: Driver) => d.riskLevel === "MEDIUM").length;
+  const negativeCount = drivers.filter((d: Driver) => d.riskLevel === "HIGH").length;
 
   const selectedDriver = drivers.find((d: Driver) => d.driverId === selectedDriverId);
 
   return (
     <div className="min-h-screen bg-blue-50/40">
-      <div className="max-w-6xl mx-auto py-10 px-6">
+      <div className="max-w-6xl mx-auto py-6 sm:py-10 px-2 sm:px-6">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="mb-5 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           Admin Dashboard
         </h1>
-        <p className="text-gray-500">
+        <p className="text-sm sm:text-base text-gray-500">
           Monitor driver sentiment scores in real-time. Data refreshes every 10 seconds.
         </p>
       </div>
@@ -133,54 +131,44 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* ─── Summary Cards ──────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{totalDrivers}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-5 sm:mb-8">
+            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{totalDrivers}</p>
             </div>
-            <div className="p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-sm text-gray-500 uppercase tracking-wider">Avg. Score</p>
-              <p className="text-3xl font-bold text-blue-600 mt-1">{avgScore}<span className="text-base font-normal text-gray-400">/5</span></p>
+            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Positive</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{positiveCount}</p>
             </div>
-            <div className={`p-5 rounded-lg border shadow-sm ${highRiskCount > 0 ? "bg-red-50 border-red-200" : "bg-white border-gray-200"}`}>
-              <p className="text-sm text-gray-500 uppercase tracking-wider">High Risk</p>
-              <p className={`text-3xl font-bold mt-1 ${highRiskCount > 0 ? "text-red-600" : "text-green-600"}`}>
-                {highRiskCount}
-              </p>
+            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Neutral</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{neutralCount}</p>
+            </div>
+            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Negative</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{negativeCount}</p>
             </div>
           </div>
 
           {/* ─── Driver Table ─────────────────────── */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Driver Scores</h2>
-              <button
-                onClick={fetchDashboardData}
-                className="text-sm px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-              >
-                Refresh
-              </button>
+          <div className="mb-5 sm:mb-8">
+            <div className="flex items-center mb-2 sm:mb-3">
+              <h2 className="text-sm sm:text-base font-medium sm:font-semibold text-gray-900 tracking-tight">Driver Scores</h2>
             </div>
-            <DriverTable drivers={drivers} onDriverSelect={handleDriverSelect} />
+            <div className="rounded-md sm:rounded-lg border border-gray-200 overflow-x-auto">
+              <DriverTable drivers={drivers} onDriverSelect={handleDriverSelect} />
+            </div>
           </div>
 
           {/* ─── Score Chart (shown when a driver is selected) ── */}
           {selectedDriver && (
-            <div className="mb-8 p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div ref={chartRef} className="mb-5 sm:mb-8 p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
               <ScoreChart
                 driverName={selectedDriver.name}
                 feedbackHistory={selectedDriverFeedback}
               />
             </div>
           )}
-
-          {/* ─── Alerts Section ───────────────────── */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Alerts ({alerts.length})
-            </h2>
-            <AlertList alerts={alerts} />
-          </div>
         </>
       )}
       </div>

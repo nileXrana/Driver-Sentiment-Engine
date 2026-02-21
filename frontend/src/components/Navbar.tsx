@@ -9,6 +9,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import NotificationBell from "./NotificationBell";
 
 interface NavLink {
   href: string;
@@ -24,6 +25,7 @@ const NAV_LINKS: NavLink[] = [
 export default function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isDashboard = pathname === "/dashboard";
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -36,24 +38,26 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Hamburger button — mobile only */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className={`sm:hidden p-2 rounded-lg transition ${isHome ? "text-white hover:bg-white/10" : "text-white hover:bg-white/10"}`}
-          aria-label="Toggle menu"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            {menuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
+        {/* Right side: bell + hamburger (mobile) / bell + links (desktop) */}
+        <div className="flex items-center gap-1">
+          {/* Hamburger button — mobile only */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`sm:hidden p-2 rounded-lg transition ${isHome ? "text-white hover:bg-white/10" : "text-white hover:bg-white/10"}`}
+            aria-label="Toggle menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              {menuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
 
-        {/* Desktop nav links */}
-        <div className="hidden sm:flex gap-1">
-          {NAV_LINKS.map((link: NavLink) => {
+          {/* Desktop nav links */}
+          <div className="hidden sm:flex gap-1">
+            {NAV_LINKS.map((link: NavLink) => {
             const isActive = pathname === link.href;
             const baseStyle = isHome
               ? "text-white/70 hover:bg-white/10 hover:text-white"
@@ -74,6 +78,10 @@ export default function Navbar() {
               </Link>
             );
           })}
+          </div>
+
+          {/* Notification bell — dashboard (admin) only, rightmost */}
+          {isDashboard && <NotificationBell />}
         </div>
       </div>
 

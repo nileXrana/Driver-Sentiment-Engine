@@ -4,7 +4,7 @@
  * Displays all drivers with their live sentiment scores.
  * 
  * Key behavior:
- * - Rows are color-coded by risk level (HIGH = red, MEDIUM = yellow, LOW = default)
+ * - Rows are color-coded by sentiment (Negative = red, Neutral = yellow, Positive = green)
  * - Clicking a row selects the driver for detailed view
  */
 
@@ -12,11 +12,16 @@
 
 import { DriverTableProps, Driver } from "../../types";
 
+/** Map risk level to sentiment label */
+const getSentiment = (riskLevel: Driver["riskLevel"]): "Negative" | "Neutral" | "Positive" => {
+  switch (riskLevel) {
+    case "HIGH":   return "Negative";
+    case "MEDIUM": return "Neutral";
+    case "LOW":    return "Positive";
+  }
+};
+
 export default function DriverTable({ drivers, onDriverSelect }: DriverTableProps) {
-  /**
-   * Get row styling based on risk level.
-   * HIGH risk drivers are highlighted in red so admins spot them immediately.
-   */
   const getRowStyle = (riskLevel: Driver["riskLevel"]): string => {
     switch (riskLevel) {
       case "HIGH":
@@ -28,8 +33,7 @@ export default function DriverTable({ drivers, onDriverSelect }: DriverTableProp
     }
   };
 
-  /** Badge color for the risk level pill */
-  const getRiskBadge = (riskLevel: Driver["riskLevel"]): string => {
+  const getSentimentBadge = (riskLevel: Driver["riskLevel"]): string => {
     switch (riskLevel) {
       case "HIGH":
         return "bg-red-100 text-red-800";
@@ -50,42 +54,38 @@ export default function DriverTable({ drivers, onDriverSelect }: DriverTableProp
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
+    <div className="rounded-md border-0">
       <table className="w-full text-left">
         <thead>
-          <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
-            <th className="px-6 py-3 font-medium">Driver ID</th>
-            <th className="px-6 py-3 font-medium">Name</th>
-            <th className="px-6 py-3 font-medium text-center">Score</th>
-            <th className="px-6 py-3 font-medium text-center">Trips</th>
-            <th className="px-6 py-3 font-medium text-center">Risk Level</th>
+          <tr className="bg-gray-100 text-gray-600 text-[11px] sm:text-xs uppercase tracking-tight">
+            <th className="px-2 sm:px-4 py-1.5 sm:py-2 font-medium">Driver ID</th>
+            <th className="px-2 sm:px-4 py-1.5 sm:py-2 font-medium">Name</th>
+            <th className="px-2 sm:px-4 py-1.5 sm:py-2 font-medium text-center">Score</th>
+            <th className="px-2 sm:px-4 py-1.5 sm:py-2 font-medium text-center">Sentiment</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-100">
           {drivers.map((driver: Driver) => (
             <tr
               key={driver.driverId}
               onClick={() => onDriverSelect(driver.driverId)}
               className={`cursor-pointer transition ${getRowStyle(driver.riskLevel)}`}
             >
-              <td className="px-6 py-4 font-mono text-sm text-gray-700">
+              <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-mono text-[11px] sm:text-xs text-gray-700">
                 {driver.driverId}
               </td>
-              <td className="px-6 py-4 font-medium text-gray-900">
+              <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-900">
                 {driver.name}
               </td>
-              <td className="px-6 py-4 text-center">
-                <span className="text-lg font-bold text-gray-900">
+              <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-center">
+                <span className="text-[11px] sm:text-xs font-bold text-gray-900">
                   {driver.averageScore.toFixed(1)}
                 </span>
-                <span className="text-xs text-gray-500">/5</span>
+                <span className="text-[9px] sm:text-[10px] text-gray-500">/5</span>
               </td>
-              <td className="px-6 py-4 text-center text-gray-600">
-                {driver.totalTrips}
-              </td>
-              <td className="px-6 py-4 text-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRiskBadge(driver.riskLevel)}`}>
-                  {driver.riskLevel}
+              <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-center">
+                <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold ${getSentimentBadge(driver.riskLevel)}`}>
+                  {getSentiment(driver.riskLevel)}
                 </span>
               </td>
             </tr>
