@@ -387,7 +387,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
                   : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
               } ${!prevIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Prev Day - {formatDateLabel(prevDate)}
+              Yesterday - {formatDateLabel(prevDate)}
             </button>
           </div>
         </div>
