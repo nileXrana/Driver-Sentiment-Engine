@@ -42,7 +42,7 @@ export default function HomePage() {
               drives <span className="text-blue-500 [text-shadow:0_1px_6px_rgba(0,0,0,0.25)]">change.</span>
             </h1>
 
-            <p className="font-[family-name:var(--font-inter)] text-gray-300 text-base sm:text-lg leading-relaxed max-w-md mb-8 lg:mb-10">
+            <p className="font-[family-name:var(--font-inter)] text-gray-300 font-medium text-base sm:text-lg leading-relaxed max-w-md mb-8 lg:mb-10">
               Help us keep every ride safe, smooth, and professional.
               Share your experience with your driver. It only takes a moment.
             </p>
@@ -62,58 +62,50 @@ export default function HomePage() {
 
             {/* ── Desktop: irregular mosaic ───────── */}
             <div className="hidden lg:grid grid-cols-6 auto-rows-[50px] gap-3 w-full max-w-md">
-              <div className="relative col-span-4 row-span-2 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
+              <div className="relative col-span-4 row-span-3 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1556122071-e404eaedb77f?w=600&q=80"
-                  alt="Cab driver smiling at camera"
+                  src="/homeImg/img1.jpg"
+                  alt="Transport scene 1"
                   fill
-                  className="object-cover"
+                  className="object-cover object-center"
                 />
               </div>
-              <div className="relative col-span-2 row-span-2 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
+              <div className="relative col-span-2 row-span-3 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&q=80"
-                  alt="Passenger in a cab"
+                  src="/homeImg/img2.jpg"
+                  alt="Transport scene 2"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative col-span-3 row-span-2 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80"
-                  alt="City bus on the road"
+                  src="/homeImg/img3.jpg"
+                  alt="Transport scene 3"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative col-span-3 row-span-3 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400&q=80"
-                  alt="Fleet of taxis lined up"
+                  src="/homeImg/img4.png"
+                  alt="Transport scene 4"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative col-span-2 row-span-2 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80"
-                  alt="Car on the road"
+                  src="/homeImg/img5.jpeg"
+                  alt="Transport scene 5"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative col-span-4 row-span-2 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=400&q=80"
-                  alt="Driver behind the wheel"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="relative col-span-2 row-span-2 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
-                <Image
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&q=80"
-                  alt="Woman working on laptop"
+                  src="/homeImg/img6.jpg"
+                  alt="Transport scene 6"
                   fill
                   className="object-cover"
                 />
@@ -125,24 +117,24 @@ export default function HomePage() {
               {/* Row 1: one large + two stacked */}
               <div className="relative col-span-2 row-span-2 h-36 sm:h-44 rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1556122071-e404eaedb77f?w=500&q=80"
-                  alt="Cab driver smiling"
+                  src="/homeImg/img1.jpg"
+                  alt="Transport scene 1"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative h-[68px] sm:h-[86px] rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=300&q=80"
-                  alt="Passenger in a cab"
+                  src="/homeImg/img2.jpg"
+                  alt="Transport scene 2"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative h-[68px] sm:h-[86px] rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=300&q=80"
-                  alt="Fleet of taxis"
+                  src="/homeImg/img3.jpg"
+                  alt="Transport scene 3"
                   fill
                   className="object-cover"
                 />
@@ -150,24 +142,24 @@ export default function HomePage() {
               {/* Row 2: three equal */}
               <div className="relative h-20 sm:h-24 rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&q=80"
-                  alt="City bus on the road"
+                  src="/homeImg/img4.png"
+                  alt="Transport scene 4"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative h-20 sm:h-24 rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300&q=80"
-                  alt="Car on the road"
+                  src="/homeImg/img5.jpeg"
+                  alt="Transport scene 5"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="relative h-20 sm:h-24 rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
-                  src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=300&q=80"
-                  alt="Driver behind the wheel"
+                  src="/homeImg/img6.jpg"
+                  alt="Transport scene 6"
                   fill
                   className="object-cover"
                 />

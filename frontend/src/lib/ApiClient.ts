@@ -68,6 +68,17 @@ export class ApiClient {
     return response.data!;
   }
 
+  /** GET /api/feedback/check — Check if user already submitted feedback for a driver on a date */
+  public static async checkFeedbackExists(
+    userName: string,
+    driverId: string,
+    feedbackDate: string
+  ): Promise<boolean> {
+    const params = new URLSearchParams({ userName, driverId, feedbackDate });
+    const response = await this.request<{ exists: boolean }>(`/feedback/check?${params}`);
+    return response.data!.exists;
+  }
+
   /** GET /api/drivers — Fetch all drivers for the dashboard */
   public static async getAllDrivers(): Promise<Driver[]> {
     const response = await this.request<Driver[]>("/drivers");

@@ -32,6 +32,16 @@ const FeedbackSchema = new Schema<FeedbackDocument>(
       enum: ["rider", "marshal", "system"],
       required: true,
     },
+    userName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    feedbackDate: {
+      type: String,   // "YYYY-MM-DD" format
+      required: true,
+      index: true,
+    },
     sentimentScore: {
       type: Number,
       required: true,

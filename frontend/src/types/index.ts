@@ -33,6 +33,8 @@ export interface SubmitFeedbackPayload {
   tripId: string;
   feedbackText: string;
   submittedBy: "rider" | "marshal";
+  userName: string;
+  feedbackDate: string;  // "YYYY-MM-DD"
 }
 
 export interface FeedbackResult {

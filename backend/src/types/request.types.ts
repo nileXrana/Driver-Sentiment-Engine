@@ -22,6 +22,12 @@ export interface SubmitFeedbackRequest {
 
   /** Who is submitting: rider or marshal */
   submittedBy: "rider" | "marshal";
+
+  /** Name of the user submitting feedback (for duplicate check before auth) */
+  userName: string;
+
+  /** Feedback date in "YYYY-MM-DD" format (today or previous working day) */
+  feedbackDate: string;
 }
 
 export interface GetDriverRequest {

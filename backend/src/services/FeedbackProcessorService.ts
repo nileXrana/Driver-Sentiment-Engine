@@ -138,6 +138,8 @@ export class FeedbackProcessorService {
         tripId: request.tripId,
         feedbackText: request.feedbackText,
         submittedBy: request.submittedBy,
+        userName: request.userName,
+        feedbackDate: request.feedbackDate,
         sentimentScore: sentimentResult.score,
         sentimentLabel: sentimentResult.label,
         matchedWords: sentimentResult.matchedWords,

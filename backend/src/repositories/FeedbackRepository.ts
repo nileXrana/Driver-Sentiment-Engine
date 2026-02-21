@@ -19,6 +19,24 @@ export class FeedbackRepository {
     }
   }
 
+  /**
+   * Check if a user has already submitted feedback for a given driver on a given date.
+   * Returns true if a matching record exists.
+   */
+  public async existsByUserDriverAndDate(
+    userName: string,
+    driverId: string,
+    feedbackDate: string
+  ): Promise<boolean> {
+    try {
+      const count = await FeedbackModel.countDocuments({ userName, driverId, feedbackDate });
+      return count > 0;
+    } catch (error) {
+      console.error("[FeedbackRepository] Error checking duplicate feedback:", error);
+      throw error;
+    }
+  }
+
   /** Get all feedback for a specific driver, newest first */
   public async findByDriverId(driverId: string): Promise<FeedbackDocument[]> {
     try {

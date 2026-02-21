@@ -14,16 +14,49 @@
 
 import { Request, Response } from "express";
 import { FeedbackProcessorService } from "../services/FeedbackProcessorService";
+import { FeedbackRepository } from "../repositories/FeedbackRepository";
 import { SubmitFeedbackRequest } from "../types/request.types";
 import { buildSuccessResponse, buildErrorResponse, FeedbackResponse } from "../types/response.types";
 
 export class FeedbackController {
   private readonly feedbackProcessor: FeedbackProcessorService;
+  private readonly feedbackRepository: FeedbackRepository;
 
-  constructor(feedbackProcessor: FeedbackProcessorService) {
+  constructor(feedbackProcessor: FeedbackProcessorService, feedbackRepository: FeedbackRepository) {
+    this.feedbackProcessor = feedbackProcessor;
+    this.feedbackRepository = feedbackRepository;
+
     // Bind 'this' context so it works correctly when Express calls the method
     this.submitFeedback = this.submitFeedback.bind(this);
-    this.feedbackProcessor = feedbackProcessor;
+    this.checkDuplicate = this.checkDuplicate.bind(this);
+  }
+
+  /**
+   * GET /api/feedback/check?userName=X&driverId=DRV001&feedbackDate=2026-02-21
+   *
+   * Returns { exists: true/false } to let the frontend know if
+   * the user has already submitted feedback for this driver on this date.
+   */
+  public async checkDuplicate(req: Request, res: Response): Promise<void> {
+    try {
+      const { userName, driverId, feedbackDate } = req.query;
+
+      if (!userName || !driverId || !feedbackDate) {
+        res.status(400).json(buildErrorResponse("Missing query params: userName, driverId, feedbackDate"));
+        return;
+      }
+
+      const exists = await this.feedbackRepository.existsByUserDriverAndDate(
+        String(userName),
+        String(driverId),
+        String(feedbackDate)
+      );
+
+      res.status(200).json(buildSuccessResponse({ exists }));
+    } catch (error) {
+      console.error("[FeedbackController] Error in checkDuplicate:", error);
+      res.status(500).json(buildErrorResponse("Failed to check feedback."));
+    }
   }
 
   /**
@@ -86,6 +119,12 @@ export class FeedbackController {
     }
     if (!body.submittedBy || !["rider", "marshal"].includes(body.submittedBy)) {
       return "Missing or invalid 'submittedBy'. Must be 'rider' or 'marshal'.";
+    }
+    if (!body.userName || typeof body.userName !== "string") {
+      return "Missing or invalid 'userName'. Must be a non-empty string.";
+    }
+    if (!body.feedbackDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.feedbackDate)) {
+      return "Missing or invalid 'feedbackDate'. Must be in YYYY-MM-DD format.";
     }
     return null; // All checks passed
   }

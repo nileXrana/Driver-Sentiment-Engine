@@ -49,6 +49,12 @@ export interface IFeedback {
   /** Who submitted it: "rider", "marshal", or "system" */
   submittedBy: "rider" | "marshal" | "system";
 
+  /** Name of the user submitting feedback (for duplicate checks before auth) */
+  userName: string;
+
+  /** Date this feedback is for: "YYYY-MM-DD" format (today or previous working day) */
+  feedbackDate: string;
+
   /** The computed sentiment score (1-5) from our engine */
   sentimentScore: number;
 

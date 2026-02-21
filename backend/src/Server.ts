@@ -55,6 +55,9 @@ import { createFeedbackRoutes } from "./routes/feedback.routes";
 import { createDriverRoutes } from "./routes/driver.routes";
 import { createConfigRoutes } from "./routes/config.routes";
 
+// Seed
+import { seedDrivers } from "./seed/driverSeed";
+
 class Server {
   private readonly app: Application;
   private readonly port: number;
@@ -133,7 +136,7 @@ class Server {
     );
 
     // ─── Layer 3: Controllers (HTTP Handlers) ──────
-    const feedbackController = new FeedbackController(this.feedbackProcessor);
+    const feedbackController = new FeedbackController(this.feedbackProcessor, feedbackRepository);
     const driverController = new DriverController(driverService, alertService);
     const configController = new ConfigController(featureFlagService);
 
@@ -160,14 +163,17 @@ class Server {
       const database = Database.getInstance();
       await database.connect(mongoUri);
 
-      // Step 2: Wire up all dependencies
+      // Step 2: Seed the database with known drivers (upsert — safe on every boot)
+      await seedDrivers();
+
+      // Step 3: Wire up all dependencies
       this.setupDependencies();
 
-      // Step 3: Start the queue worker
+      // Step 4: Start the queue worker
       const pollInterval = parseInt(process.env.QUEUE_POLL_INTERVAL_MS || "2000", 10);
       this.feedbackProcessor!.startWorker(pollInterval);
 
-      // Step 4: Start listening for HTTP requests
+      // Step 5: Start listening for HTTP requests
       this.app.listen(this.port, () => {
         console.log("═══════════════════════════════════════════════════");
         console.log("  Driver Sentiment Engine - Backend Server");
@@ -182,7 +188,7 @@ class Server {
         console.log("═══════════════════════════════════════════════════");
       });
 
-      // Step 5: Graceful shutdown hooks
+      // Step 6: Graceful shutdown hooks
       this.setupGracefulShutdown(database);
     } catch (error) {
       console.error("[Server] Failed to start:", error);
