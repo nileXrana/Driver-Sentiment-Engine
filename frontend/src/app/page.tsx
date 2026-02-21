@@ -33,13 +33,13 @@ export default function HomePage() {
           {/* ── LEFT: Text + CTAs ─────────────────── */}
           <div>
             <span className="font-[family-name:var(--font-inter)] inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-blue-300 text-xs font-semibold tracking-widest uppercase mb-6">
-              Fleet Intelligence Platform
+              Trusted Mobility Insights
             </span>
 
             <h1 className="font-[family-name:var(--font-playfair)] text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-4 sm:mb-5">
               Your feedback
               <br />
-              drives <span className="text-blue-400">change.</span>
+              drives <span className="text-blue-500 [text-shadow:0_1px_6px_rgba(0,0,0,0.25)]">change.</span>
             </h1>
 
             <p className="font-[family-name:var(--font-inter)] text-gray-300 text-base sm:text-lg leading-relaxed max-w-md mb-8 lg:mb-10">

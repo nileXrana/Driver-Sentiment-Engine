@@ -105,7 +105,8 @@ export default function DashboardPage() {
   const selectedDriver = drivers.find((d: Driver) => d.driverId === selectedDriverId);
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-6">
+    <div className="min-h-screen bg-blue-50/40">
+      <div className="max-w-6xl mx-auto py-10 px-6">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -182,6 +183,7 @@ export default function DashboardPage() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

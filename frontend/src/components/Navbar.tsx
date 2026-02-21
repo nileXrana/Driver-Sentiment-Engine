@@ -79,15 +79,12 @@ export default function Navbar() {
 
       {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div className={`sm:hidden px-4 pb-4 ${isHome ? "bg-gray-950/80 backdrop-blur-md" : "bg-white border-t border-gray-100"}`}>
+        <div className="sm:hidden px-4 pb-4">
+          <div className="mt-1 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
           {NAV_LINKS.map((link: NavLink) => {
             const isActive = pathname === link.href;
-            const baseStyle = isHome
-              ? "text-white/70 hover:bg-white/10 hover:text-white"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
-            const activeStyle = isHome
-              ? "bg-white/15 text-white"
-              : "bg-blue-100 text-blue-700";
+            const baseStyle = "text-gray-700 hover:bg-gray-100 hover:text-gray-900";
+            const activeStyle = "bg-blue-100 text-blue-700";
 
             return (
               <Link
@@ -102,6 +99,7 @@ export default function Navbar() {
               </Link>
             );
           })}
+          </div>
         </div>
       )}
     </nav>

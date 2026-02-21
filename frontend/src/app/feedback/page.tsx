@@ -39,10 +39,11 @@ export default function FeedbackPage() {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-6">
+    <div className="min-h-screen bg-blue-50/40">
+      <div className="max-w-2xl mx-auto py-10 px-6">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Submit Feedback</h1>
-        <p className="text-gray-500">
+        <p className="text-gray-500 md:text-sm lg:text-base md:whitespace-nowrap">
           Rate your driver experience. Our sentiment engine will analyze your feedback instantly.
         </p>
       </div>
@@ -61,6 +62,7 @@ export default function FeedbackPage() {
       )}
 
       {flags && <FeedbackForm featureFlags={flags} />}
+      </div>
     </div>
   );
 }

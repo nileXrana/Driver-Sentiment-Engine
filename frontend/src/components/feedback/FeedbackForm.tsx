@@ -185,7 +185,7 @@ export default function FeedbackForm({ featureFlags }: FeedbackFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-gray-700 text-white font-medium rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Analyzing..." : "Submit Feedback"}
         </button>
