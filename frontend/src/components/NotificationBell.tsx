@@ -32,7 +32,7 @@ function saveResolved(ids: Set<string>): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   } catch {
-    /* quota exceeded — ignore */
+    /* quota exceeded - ignore */
   }
 }
 
@@ -53,7 +53,7 @@ export default function NotificationBell() {
       const data = await ApiClient.getAlerts();
       setAlerts(data);
     } catch {
-      /* network error — keep stale data */
+      /* network error - keep stale data */
     }
   }, []);
 

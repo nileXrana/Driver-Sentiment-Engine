@@ -130,7 +130,7 @@ function StarRating({ value, onChange, label }: StarRatingProps) {
   );
 }
 
-// ─── Section card (extracted to prevent re-mount on parent re-render) ────────
+// ─── Section card (extracted to prevent re-mount on parent re-render) -
 const INPUT_CLASS =
   "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent focus:bg-white outline-none transition text-gray-900 placeholder:text-gray-400 text-sm";
 
@@ -256,7 +256,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       return;
     }
     if (!formData.driverId.trim() || !formData.driverName.trim()) {
-      setError("Please enter a valid Driver ID — the driver name must be auto-filled before submitting.");
+      setError("Please enter a valid Driver ID.");
       return;
     }
 
@@ -270,7 +270,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
     // Validate at least one comment (primary input for sentiment engine)
     const primaryComment = formData.driverComment || formData.marshalComment;
     if (!primaryComment.trim()) {
-      setError("Please write a comment — it helps our sentiment engine analyse your experience.");
+      setError("Please write a comment - it helps our sentiment engine analyse your experience.");
       return;
     }
 
@@ -296,7 +296,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
 
     // Prevent submissions on non-working days
     if (!isWorkingDay(selectedDate)) {
-      setError("Feedback can only be submitted for working days (Mon–Fri). Please try on a working day.");
+      setError("Feedback can only be submitted for working days (Mon-Fri). Please try on a working day.");
       return;
     }
 
@@ -457,10 +457,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
 
         {/* ── Error ─────────────────────────────────── */}
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
             {error}
           </div>
         )}

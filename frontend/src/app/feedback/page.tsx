@@ -1,5 +1,5 @@
 /**
- * Feedback Page — two-column layout on desktop.
+ * Feedback Page - two-column layout on desktop.
  * Left: decorative image panel. Right: scrollable form.
  */
 

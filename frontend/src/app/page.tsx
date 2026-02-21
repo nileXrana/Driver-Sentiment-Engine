@@ -1,5 +1,5 @@
 /**
- * Landing Page — single-screen, no scroll.
+ * Landing Page - single-screen, no scroll.
  * Full viewport hero with real cab imagery and a clear CTA.
  * Desktop: left text + right image grid. Mobile: stacked.
  */

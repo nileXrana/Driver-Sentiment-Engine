@@ -51,13 +51,13 @@ export class ApiClient {
     }
   }
 
-  /** GET /api/config/flags — Fetch feature flags for conditional rendering */
+  /** GET /api/config/flags - Fetch feature flags for conditional rendering */
   public static async getFeatureFlags(): Promise<FeatureFlags> {
     const response = await this.request<FeatureFlags>("/config/flags");
     return response.data!;
   }
 
-  /** POST /api/feedback — Submit rider/marshal feedback */
+  /** POST /api/feedback - Submit rider/marshal feedback */
   public static async submitFeedback(
     payload: SubmitFeedbackPayload
   ): Promise<FeedbackResult> {
@@ -68,7 +68,7 @@ export class ApiClient {
     return response.data!;
   }
 
-  /** GET /api/feedback/check — Check if user already submitted feedback for a driver on a date */
+  /** GET /api/feedback/check - Check if user already submitted feedback for a driver on a date */
   public static async checkFeedbackExists(
     userName: string,
     driverId: string,
@@ -79,19 +79,19 @@ export class ApiClient {
     return response.data!.exists;
   }
 
-  /** GET /api/drivers — Fetch all drivers for the dashboard */
+  /** GET /api/drivers - Fetch all drivers for the dashboard */
   public static async getAllDrivers(): Promise<Driver[]> {
     const response = await this.request<Driver[]>("/drivers");
     return response.data!;
   }
 
-  /** GET /api/drivers/:id — Fetch a single driver */
+  /** GET /api/drivers/:id - Fetch a single driver */
   public static async getDriver(driverId: string): Promise<Driver> {
     const response = await this.request<Driver>(`/drivers/${driverId}`);
     return response.data!;
   }
 
-  /** GET /api/drivers/alerts/all — Fetch all alerts */
+  /** GET /api/drivers/alerts/all - Fetch all alerts */
   public static async getAlerts(): Promise<Alert[]> {
     const response = await this.request<Alert[]>("/drivers/alerts/all");
     return response.data!;

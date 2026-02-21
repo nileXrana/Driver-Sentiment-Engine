@@ -40,7 +40,7 @@ export default function Navbar() {
 
         {/* Right side: bell + hamburger (mobile) / bell + links (desktop) */}
         <div className="flex items-center gap-1">
-          {/* Hamburger button — mobile only */}
+          {/* Hamburger button - mobile only */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className={`sm:hidden p-2 rounded-lg transition ${isHome ? "text-white hover:bg-white/10" : "text-white hover:bg-white/10"}`}
@@ -80,7 +80,7 @@ export default function Navbar() {
           })}
           </div>
 
-          {/* Notification bell — dashboard (admin) only, rightmost */}
+          {/* Notification bell - dashboard (admin) only, rightmost */}
           {isDashboard && <NotificationBell />}
         </div>
       </div>
