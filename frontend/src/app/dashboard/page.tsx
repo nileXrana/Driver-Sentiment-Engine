@@ -96,9 +96,10 @@ export default function DashboardPage() {
 
   // ─── Summary Stats ────────────────────────────
   const totalDrivers = drivers.length;
-  const positiveCount = drivers.filter((d: Driver) => d.riskLevel === "LOW").length;
-  const neutralCount = drivers.filter((d: Driver) => d.riskLevel === "MEDIUM").length;
-  const negativeCount = drivers.filter((d: Driver) => d.riskLevel === "HIGH").length;
+  const positiveCount = drivers.filter((d: Driver) => d.riskLevel === "LOW" && d.totalTrips >= 5).length;
+  const neutralCount = drivers.filter((d: Driver) => d.riskLevel === "MEDIUM" && d.totalTrips >= 5).length;
+  const negativeCount = drivers.filter((d: Driver) => d.riskLevel === "HIGH" && d.totalTrips >= 5).length;
+  const notEnoughDataCount = drivers.filter((d: Driver) => d.totalTrips < 5).length;
 
   const selectedDriver = drivers.find((d: Driver) => d.driverId === selectedDriverId);
 
@@ -131,22 +132,28 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* ─── Summary Cards ──────────────────────── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-5 sm:mb-8">
-            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{totalDrivers}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-4 mb-3 sm:mb-8">
+            <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
+              <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{totalDrivers}</p>
             </div>
-            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Positive</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{positiveCount}</p>
+            <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Not enough data</p>
+              <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{notEnoughDataCount}</p>
             </div>
-            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Neutral</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{neutralCount}</p>
-            </div>
-            <div className="p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Negative</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{negativeCount}</p>
+            <div className="col-span-2 sm:col-span-3 grid grid-cols-3 gap-1.5 sm:gap-4">
+              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Positive</p>
+                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{positiveCount}</p>
+              </div>
+              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Neutral</p>
+                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{neutralCount}</p>
+              </div>
+              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Negative</p>
+                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{negativeCount}</p>
+              </div>
             </div>
           </div>
 

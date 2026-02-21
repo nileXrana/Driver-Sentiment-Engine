@@ -25,11 +25,11 @@ export default function DriverTable({ drivers, onDriverSelect }: DriverTableProp
   const getRowStyle = (riskLevel: Driver["riskLevel"]): string => {
     switch (riskLevel) {
       case "HIGH":
-        return "bg-red-50 hover:bg-red-100 border-l-4 border-l-red-500";
+        return "bg-red-50 hover:bg-red-100";
       case "MEDIUM":
-        return "bg-yellow-50 hover:bg-yellow-100 border-l-4 border-l-yellow-500";
+        return "bg-yellow-50 hover:bg-yellow-100";
       case "LOW":
-        return "bg-white hover:bg-gray-50 border-l-4 border-l-green-500";
+        return "bg-white hover:bg-gray-50";
     }
   };
 
@@ -84,9 +84,15 @@ export default function DriverTable({ drivers, onDriverSelect }: DriverTableProp
                 <span className="text-[9px] sm:text-[10px] text-gray-500">/5</span>
               </td>
               <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-center">
-                <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold ${getSentimentBadge(driver.riskLevel)}`}>
-                  {getSentiment(driver.riskLevel)}
-                </span>
+                {driver.totalTrips < 5 ? (
+                  <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-gray-100 text-gray-500">
+                    Not enough data
+                  </span>
+                ) : (
+                  <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold ${getSentimentBadge(driver.riskLevel)}`}>
+                    {getSentiment(driver.riskLevel)}
+                  </span>
+                )}
               </td>
             </tr>
           ))}

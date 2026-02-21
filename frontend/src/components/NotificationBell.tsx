@@ -75,7 +75,20 @@ export default function NotificationBell() {
   }, []);
 
   // ─── Derived values ───────────────────────────
-  const unresolvedAlerts = alerts.filter((a) => !resolvedIds.has(a._id));
+  // Fetch all drivers to check feedback count
+  const [drivers, setDrivers] = useState<{ driverId: string; totalTrips: number }[]>([]);
+  useEffect(() => {
+    ApiClient.getAllDrivers().then((ds) => {
+      setDrivers(ds.map(d => ({ driverId: d.driverId, totalTrips: d.totalTrips })));
+    });
+  }, []);
+
+  // Only show alerts for drivers with >= 5 feedbacks
+  const unresolvedAlerts = alerts.filter((a) => {
+    if (resolvedIds.has(a._id)) return false;
+    const driver = drivers.find(d => d.driverId === a.driverId);
+    return driver && driver.totalTrips >= 5;
+  });
   const unresolvedCount = unresolvedAlerts.length;
 
   // ─── Handlers ─────────────────────────────────
@@ -140,7 +153,7 @@ export default function NotificationBell() {
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900">
-              Notifications
+              ALERTS
             </h3>
             <span className="text-xs text-gray-500">
               {unresolvedCount} unresolved
@@ -178,17 +191,16 @@ export default function NotificationBell() {
                       </div>
 
                       <p className="text-xs text-gray-600 mt-0.5">
-                        Score dropped to{" "}
+                        Score dropped to{' '}
                         <span className="font-semibold text-red-600">
                           {alert.currentScore.toFixed(1)}
-                        </span>{" "}
-                        (threshold: {alert.threshold})
+                        </span>
                       </p>
 
                       {/* Resolve button */}
                       <button
                         onClick={() => handleResolve(alert._id)}
-                        className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition"
+                        className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-black border border-black rounded-md hover:bg-gray-900 transition"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
