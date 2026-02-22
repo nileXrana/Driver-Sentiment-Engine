@@ -25,16 +25,10 @@ This system was engineered with a focus on **algorithm efficiency, data structur
 - **Graceful Degradation & "Zero-Config" Seeding**: `AuthService` auto-seeds demo admin/employee users on startup if the database is completely empty.
 
 ## Screenshots
-![alt text](readImg1.png)
-![alt text](readImg2.png)
-![alt text](readImg3.png)
-![alt text](readImg4.png)
 
-*(Add screenshots of your project here)*
-
-| Admin Dashboard | Feedback Flow | Login System |
-|---|---|---|
-| *[Insert Image Here]* | *[Insert Image Here]* | *[Insert Image Here]* |
+| Home Page | Feedback Flow | Admin Dashboard | Driver's Score Graph |
+|---|---|---|---|
+| ![alt text](readImg1.png) | ![alt text](readImg2.png) | ![alt text](readImg3.png) | ![alt text](readImg4.png) |
 
 ## Tech Stack
 
