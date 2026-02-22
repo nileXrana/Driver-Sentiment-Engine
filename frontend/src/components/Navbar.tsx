@@ -25,8 +25,8 @@ const NAV_LINKS: NavLink[] = [
 export default function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const isDashboard = pathname === "/dashboard";
   const [menuOpen, setMenuOpen] = useState(false);
+    const isDashboard = pathname?.startsWith("/dashboard");
 
   return (
     <nav className={`${isHome ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "sticky top-0 z-50 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 shadow-lg"}`}>
@@ -41,6 +41,12 @@ export default function Navbar() {
         {/* Right side: bell + hamburger (mobile) / bell + links (desktop) */}
         <div className="flex items-center gap-1">
           {/* Hamburger button - mobile only */}
+          {/* Mobile alert bell (shown only on dashboard) */}
+          {isDashboard && (
+            <div className="flex sm:hidden mr-2 items-center">
+              <NotificationBell />
+            </div>
+          )}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className={`sm:hidden p-2 rounded-lg transition ${isHome ? "text-white hover:bg-white/10" : "text-white hover:bg-white/10"}`}
@@ -80,8 +86,10 @@ export default function Navbar() {
           })}
           </div>
 
-          {/* Notification bell - dashboard (admin) only, rightmost */}
-          {isDashboard && <NotificationBell />}
+          {/* Reserve space for notification bell so navbar doesn't shift when toggling dashboard */}
+          <div className="hidden sm:flex w-10 h-10 items-center justify-center">
+            {isDashboard ? <NotificationBell /> : <div className="w-10 h-10" />}
+          </div>
         </div>
       </div>
 
