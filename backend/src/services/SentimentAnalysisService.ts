@@ -1,21 +1,21 @@
 /**
  * SentimentAnalysisService.ts
  * ----------------------------
- * Rule-Based Sentiment Engine using the Bag-of-Words approach.
+ * Rule-Based Sentiment Engine using the Word Dictionary approach.
  * 
  * ┌──────────────────────────────────────────────────────────────┐
- * │ ALGORITHM EXPLANATION (for interview)                         │
- * │                                                               │
- * │ 1. We maintain two Sets: positiveWords and negativeWords.     │
+ * │ ALGORITHM EXPLANATION                                        │
+ * │                                                              │
+ * │ 1. We maintain two Sets: positiveWords and negativeWords.    │
  * │    Using Set gives us O(1) lookup per word (vs O(n) for an   │
  * │    array). For 'n' words in the feedback, total time is O(n).│
- * │                                                               │
+ * │                                                              │
  * │ 2. We tokenize the input, then count how many words appear   │
- * │    in each set.                                               │
- * │                                                               │
+ * │    in each set.                                              │
+ * │                                                              │
  * │ 3. We compute a raw ratio: (positive - negative) / total     │
  * │    and map it to a 1-5 scale.                                │
- * │                                                               │
+ * │                                                              │
  * │ TIME COMPLEXITY:  O(n) where n = number of words in text     │
  * │ SPACE COMPLEXITY: O(k) where k = size of our word dictionary │
  * └──────────────────────────────────────────────────────────────┘
