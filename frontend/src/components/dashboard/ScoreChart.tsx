@@ -57,7 +57,13 @@ export default function ScoreChart({ driverName, feedbackHistory }: ScoreChartPr
             </span>
           </div>
           {data.feedbackText && (
-            <p className="text-gray-700 italic text-xs border-t pt-2 mt-2">"{data.feedbackText}"</p>
+            <div className="border-t pt-2 mt-2">
+              {data.feedbackText.split(' | ').map((line: string, index: number) => (
+                <p key={index} className="text-gray-700 italic text-xs mb-1">
+                  "{line}"
+                </p>
+              ))}
+            </div>
           )}
         </div>
       );

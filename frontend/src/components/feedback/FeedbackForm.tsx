@@ -21,6 +21,7 @@ import { FeedbackFormProps, SubmitFeedbackPayload, FeedbackResult } from "../../
 const DEFAULT_CONFIG = {
   enableDriver: true,
   enableMarshal: false,
+  enableApp: false,
 };
 
 // ─── Strict types ────────────────────────────────────────────────────────────
@@ -36,6 +37,9 @@ interface FeedbackData {
   // Marshal section
   marshalRating: number;
   marshalComment: string;
+  // App section
+  appRating: number;
+  appComment: string;
 }
 
 interface StarRatingProps {
@@ -187,8 +191,9 @@ function SectionCard({
 export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormProps) {
   // Merge flag prop values into the config (runtime overrides compile-time defaults)
   const CONFIG = {
-    enableDriver: DEFAULT_CONFIG.enableDriver,
+    enableDriver: featureFlags?.enableRiderFeedback ?? DEFAULT_CONFIG.enableDriver,
     enableMarshal: featureFlags?.enableMarshalFeedback ?? DEFAULT_CONFIG.enableMarshal,
+    enableApp: featureFlags?.enableAppFeedback ?? DEFAULT_CONFIG.enableApp,
   };
 
   // ─── Single state object for all form data ──────────────────
@@ -200,6 +205,8 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
     driverComment: "",
     marshalRating: 0,
     marshalComment: "",
+    appRating: 0,
+    appComment: "",
   });
 
   // ─── Feedback date selection ─────────────────────────────────
@@ -268,18 +275,38 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       return;
     }
 
-    // Validate at least one rating was given
-    const hasRating = formData.driverRating > 0 || formData.marshalRating > 0;
-    if (!hasRating) {
-      setError("Please give at least one star rating before submitting.");
-      return;
+    // Validate that ALL enabled sections have both a rating and a comment
+    if (CONFIG.enableDriver) {
+      if (formData.driverRating === 0) {
+        setError("Please give a star rating for your Driver.");
+        return;
+      }
+      if (!formData.driverComment.trim()) {
+        setError("Please leave a comment for your Driver.");
+        return;
+      }
     }
 
-    // Validate at least one comment (primary input for sentiment engine)
-    const primaryComment = formData.driverComment || formData.marshalComment;
-    if (!primaryComment.trim()) {
-      setError("Please write a comment - it helps our sentiment engine analyse your experience.");
-      return;
+    if (CONFIG.enableMarshal) {
+      if (formData.marshalRating === 0) {
+        setError("Please give a star rating for the Marshal.");
+        return;
+      }
+      if (!formData.marshalComment.trim()) {
+        setError("Please leave a comment for the Marshal.");
+        return;
+      }
+    }
+
+    if (CONFIG.enableApp) {
+      if (formData.appRating === 0) {
+        setError("Please give a star rating for the App Experience.");
+        return;
+      }
+      if (!formData.appComment.trim()) {
+        setError("Please leave a comment for the App Experience.");
+        return;
+      }
     }
 
     // Build the feedback text: combine all comments with labels for richer analysis
@@ -288,14 +315,18 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       commentParts.push(`Rating (${formData.driverRating}/5): ${formData.driverComment}`);
     if (CONFIG.enableMarshal && formData.marshalRating > 0)
       commentParts.push(`Marshal (${formData.marshalRating}/5): ${formData.marshalComment}`);
+    if (CONFIG.enableApp && formData.appRating > 0)
+      commentParts.push(`App (${formData.appRating}/5): ${formData.appComment}`);
 
     const payload: SubmitFeedbackPayload = {
       driverId: formData.driverId.trim(),
       driverName: formData.driverName.trim(),
       feedbackText: commentParts.join(" | "),
-      rating: formData.driverRating > 0 ? formData.driverRating : formData.marshalRating,
+      rating: formData.driverRating > 0 ? formData.driverRating : (formData.marshalRating > 0 ? formData.marshalRating : formData.appRating),
       userName: formData.userName.trim(),
       feedbackDate: selectedDate,
+      driverRating: formData.driverRating > 0 ? formData.driverRating : undefined,
+      driverFeedbackText: formData.driverComment.trim() || undefined,
     };
 
     // Log the final JSON payload (simulating API call structure)
@@ -329,6 +360,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
         ...prev,
         driverRating: 0, driverComment: "",
         marshalRating: 0, marshalComment: "",
+        appRating: 0, appComment: "",
       }));
       // Notify parent (page) to show global/top alert
       try {
@@ -455,6 +487,19 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
             onRatingChange={(r) => update("marshalRating", r)}
             onCommentChange={(val) => update("marshalComment", val)}
             commentPlaceholder="How did the marshal handle boarding, safety checks, or assistance?"
+          />
+        )}
+
+        {/* ── App section (hidden by default) ──────── */}
+        {CONFIG.enableApp && (
+          <SectionCard
+            title="App Experience"
+            emoji="📱"
+            ratingValue={formData.appRating}
+            commentValue={formData.appComment}
+            onRatingChange={(r) => update("appRating", r)}
+            onCommentChange={(val) => update("appComment", val)}
+            commentPlaceholder="Was the booking fast? Did GPS tracking work properly?"
           />
         )}
 

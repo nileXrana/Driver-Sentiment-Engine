@@ -35,6 +35,7 @@ export interface DriverResponse {
 export interface FeatureFlagResponse {
   enableRiderFeedback: boolean;
   enableMarshalFeedback: boolean;
+  enableAppFeedback: boolean;
   enableTripIdField: boolean;
   enableSentimentDetails: boolean;
   enableAlertDashboard: boolean;

@@ -20,6 +20,7 @@ export interface ApiResponse<T> {
 export interface FeatureFlags {
   enableRiderFeedback: boolean;
   enableMarshalFeedback: boolean;
+  enableAppFeedback: boolean;
   enableTripIdField: boolean;
   enableSentimentDetails: boolean;
   enableAlertDashboard: boolean;
@@ -34,6 +35,8 @@ export interface SubmitFeedbackPayload {
   rating: number;
   userName: string;
   feedbackDate: string;  // "YYYY-MM-DD"
+  driverRating?: number;
+  driverFeedbackText?: string;
 }
 
 export interface FeedbackResult {

@@ -68,8 +68,9 @@ export class FeedbackProcessorService {
     queuePosition: number;
   }> {
     // Step 1: Analyze sentiment right away (synchronous, O(n) on text length)
-    // Pass the explicit user rating as the second parameter to blend it
-    const sentimentResult = this.sentimentEngine.analyze(request.feedbackText, request.rating);
+    // Pass strictly the driver's text and rating to the engine so Marshal/App feedback doesn't pollute it
+    const textToAnalyze = request.driverFeedbackText || "";
+    const sentimentResult = this.sentimentEngine.analyze(textToAnalyze, request.driverRating);
 
     // Step 2: Ensure the driver record exists (create if first-time)
     await this.driverService.findOrCreateDriver(request.driverId, request.driverName);
@@ -145,11 +146,23 @@ export class FeedbackProcessorService {
         processed: false,
       });
 
-      // Step 2: Update the driver's rolling average score
-      const updatedDriver = await this.driverService.updateDriverScore(
-        request.driverId,
-        sentimentResult.score
-      );
+      // Step 2: Update the driver's rolling average score (ONLY if driver feedback exists)
+      let updatedDriver;
+      const hasDriverFeedback = request.driverRating !== undefined || (request.driverFeedbackText && request.driverFeedbackText.trim().length > 0);
+
+      if (hasDriverFeedback) {
+        updatedDriver = await this.driverService.updateDriverScore(
+          request.driverId,
+          sentimentResult.score
+        );
+      } else {
+        // App/Marshal only feedback - don't penalize the driver with a neutral score
+        updatedDriver = await this.driverService.getDriverById(request.driverId);
+        if (!updatedDriver) {
+          updatedDriver = await this.driverService.findOrCreateDriver(request.driverId, request.driverName);
+        }
+        console.log(`[FeedbackProcessor] Skipped score update for driver '${request.driverId}' (No direct driver feedback)`);
+      }
 
       // Step 3: Check if this score drop should trigger an alert
       await this.alertService.checkAndAlert(

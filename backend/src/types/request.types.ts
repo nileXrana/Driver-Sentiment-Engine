@@ -25,6 +25,12 @@ export interface SubmitFeedbackRequest {
 
   /** Feedback date in "YYYY-MM-DD" format (today or previous working day) */
   feedbackDate: string;
+
+  /** The exact words written specifically about the driver (if any) */
+  driverFeedbackText?: string;
+
+  /** The explicit 1-5 star rating specifically for the driver (if any) */
+  driverRating?: number;
 }
 
 export interface GetDriverRequest {

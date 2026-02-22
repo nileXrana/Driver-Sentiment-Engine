@@ -4,7 +4,7 @@
  * Monitors driver scores and triggers alerts when performance drops.
  * 
  * ┌──────────────────────────────────────────────────────────────┐
- * │ ANTI-SPAM LOGIC (for interview)                               │
+ * │ ANTI-SPAM LOGIC                               │
  * │                                                               │
  * │ Without cooldown, a driver receiving 10 bad reviews in        │
  * │ 5 minutes would generate 10 alerts — overwhelming the admin. │

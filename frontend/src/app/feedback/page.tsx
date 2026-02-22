@@ -32,6 +32,7 @@ export default function FeedbackPage() {
         setFlags({
           enableRiderFeedback: true,
           enableMarshalFeedback: false,
+          enableAppFeedback: true,
           enableTripIdField: true,
           enableSentimentDetails: true,
           enableAlertDashboard: true,
