@@ -1,263 +1,68 @@
 # Driver Sentiment Engine
 
-A production-grade MVP for analyzing driver performance through rider and marshal feedback, built with **Express.js + TypeScript** (Backend) and **Next.js** (Frontend), backed by **MongoDB**.
+A Project for analyzing driver performance through employee feedback. Features real-time sentiment analysis, JWT role-based authentication, and a non-blocking asynchronous queue for processing feedback. Built with **Express.js + TypeScript** on the Backend and **Next.js + Tailwind CSS** on the Frontend, backed by **MongoDB**.
 
----
+This system was engineered with a focus on **algorithm efficiency, data structure optimization, and clean architecture (OOP).**
 
-## System Architecture
+## Key Features
 
-```
-┌─────────────┐     ┌──────────────────────────────────────────────────────┐
-│   Next.js   │────▶│                   Express Backend                    │
-│  Frontend   │     │                                                      │
-│             │◀────│  Controller ──▶ Service ──▶ Repository ──▶ MongoDB   │
-└─────────────┘     │      │                                               │
-                    │      ▼                                               │
-                    │  FeedbackController                                  │
-                    │      │                                               │
-                    │      ▼                                               │
-                    │  SentimentEngine ──▶ InMemoryQueue ──▶ QueueWorker  │
-                    │  (Bag of Words)         │                            │
-                    │                         ▼                            │
-                    │               DriverService (Rolling Avg)            │
-                    │                         │                            │
-                    │                         ▼                            │
-                    │               AlertService (Threshold Check)         │
-                    └──────────────────────────────────────────────────────┘
-```
+- **Real-time Sentiment Analysis**: Instantly categorizes text feedback into positive/neutral/negative ratings using a localized natural language processing bag-of-words approach, mathematically blended with quantitative star ratings.
+- **Secure Authentication & Role-Based Access (JWT)**: Login system utilizing bcrypt password hashing and JSON Web Tokens. Admin vs. Employee roles dictate strict, isolated UI routing and component rendering.
+- **Dynamic Feature Flags**: Centralized config system allows toggling UI components (like marshal feedback) on the fly without deploying new code.
+- **Asynchronous Task Processing**: Real-time feedback submission with non-blocking, background queue processing for data persistence and alerting.
 
----
+## Technical Highlights & Engineering Decisions
 
-## System Design Decisions
+### 1. Data Structures & Algorithm Efficiency
+- **$O(1)$ Sentiment Word Lookup containing Hash Sets**: The Sentiment Analysis Engine relies on predefined dictionaries. Instead of using arrays (which run in $O(N)$), we utilize `Set<string>` structures mapped in isolated memory, enabling instant $O(1)$ lookups per localized tokenized word.
+- **Amortized $O(1)$ In-Memory Queue**: Feedback processing is completely decoupled from the HTTP response cycle using an asynchronous FIFO `InMemoryQueue<T>`. This allows instant feedback submission for users, while heavy sentiment crunching and database writes happen sequentially in the background worker.
+- **$O(1)$ Rolling Average Updates**: Instead of recalculating a driver's average rating by querying all past feedback ($O(N)$ operations which would destroy database performance at scale), we store `totalScore` and `totalFeedback` on the driver document directly. Updating the average score requires only a single atomic `$inc`/`$set` MongoDB transaction.
 
-### 1. In-Memory Queue: Speed vs. Persistence Trade-off
+### 2. Architecture & Design Patterns
+- **Repository Pattern**: Strict separation of concerns mirroring Spring Boot. Controllers handle HTTP schemas, Services contain business logic, and Repositories handle MongoDB transactions. E.g. If we swap from MongoDB to PostgreSQL, only the `src/repositories` layer changes.
+- **Singleton Pattern**: Built a `Database` connection class strictly enforcing a single MongoDB connection pool across the application lifecycle to prevent memory leaks and max connection limits.
+- **Dependency Injection**: Root `Server.ts` explicitly wires all Repositories, Services, and Controllers together at boot via Constructors (Poor Man's DI). This ensures high testability and prevents cross-dependency code-spaghetti. 
+- **Graceful Degradation & "Zero-Config" Seeding**: `AuthService` auto-seeds demo admin/employee users on startup if the database is completely empty.
 
-**Choice:** We use a simple `InMemoryQueue<T>` (array-backed FIFO) instead of Redis or RabbitMQ.
+## Screenshots
+![alt text](readImg1.png)
+![alt text](readImg2.png)
+![alt text](readImg3.png)
+![alt text](readImg4.png)
 
-**Why:**
-- **Speed:** Zero network overhead. Enqueue/dequeue are `O(1)` amortized operations on a JavaScript array.
-- **Simplicity:** No infrastructure dependencies — the queue lives inside the Node.js process.
-- **MVP-appropriate:** For a case study/demo, in-memory is the right level of complexity.
+*(Add screenshots of your project here)*
 
-**Trade-off:**
-- If the server crashes, any unprocessed items in the queue are **lost**.
-- In a production system, we would swap `InMemoryQueue` with a Redis-backed queue (e.g., BullMQ). Because we coded to the `IQueue<T>` interface, this swap requires **zero changes** to the rest of the codebase (Open/Closed Principle).
+| Admin Dashboard | Feedback Flow | Login System |
+|---|---|---|
+| *[Insert Image Here]* | *[Insert Image Here]* | *[Insert Image Here]* |
 
-**Capacity guard:** The queue has a configurable `maxCapacity` (default: 10,000) to prevent unbounded memory growth.
+## Tech Stack
 
----
+- **Frontend**: Next.js (React), Tailwind CSS
+- **Backend**: Node.js, Express.js, TypeScript
+- **Database**: MongoDB (Mongoose)
 
-### 2. Sentiment Analysis: O(1) Word Lookup with Sets
-
-**Algorithm:** Bag-of-Words with a hardcoded dictionary.
-
-**Time Complexity Analysis:**
-| Operation | Complexity | Explanation |
-|-----------|-----------|-------------|
-| Tokenization | `O(n)` | Split text into `n` words |
-| Per-word lookup | `O(1)` | `Set.has()` uses a hash table internally |
-| Total analysis | `O(n)` | One pass through all words |
-
-**Why `Set<string>` instead of `Array`?**
-- `Array.includes()` scans linearly → `O(k)` per lookup where `k` = dictionary size.
-- `Set.has()` uses hashing → `O(1)` average per lookup.
-- For `n` words in the text and `k` words in the dictionary:
-  - Array approach: `O(n × k)` total
-  - Set approach: `O(n)` total ← **what we use**
-
-**Score Formula:**
-```
-ratio = (positiveCount - negativeCount) / totalSentimentWords
-score = ((ratio + 1) / 2) × 4 + 1    // Maps [-1, +1] to [1, 5]
-```
-
----
-
-### 3. Rolling Average: O(1) Score Updates
-
-**Problem:** A naive approach recalculates the average by querying ALL past feedback:
-```
-average = SUM(score for all feedback) / COUNT(all feedback)   → O(n) reads
-```
-If a driver has 10,000 trips, that's 10,000 database reads per new feedback.
-
-**Our Solution:** Store `totalScore` and `totalTrips` directly on the Driver document:
-```
-// When new feedback (score = 4.2) arrives:
-newTotalScore = driver.totalScore + 4.2
-newTotalTrips = driver.totalTrips + 1
-newAverage    = newTotalScore / newTotalTrips
-```
-
-| Approach | DB Reads per Update | Time Complexity |
-|----------|-------------------|----------------|
-| Naive (re-sum all) | `n` (all feedback) | `O(n)` |
-| Rolling average | `1` (driver doc) | `O(1)` |
-
-**Atomicity:** We use MongoDB's `$inc` and `$set` operators to update these fields atomically, preventing race conditions when two pieces of feedback arrive simultaneously.
-
----
-
-### 4. Alert Anti-Spam: Cooldown Mechanism
-
-**Problem:** If a driver gets 10 bad reviews in 5 minutes, they'd get 10 alerts.
-
-**Solution:** Before creating an alert, we check:
-```
-timeSinceLastAlert = now - lastAlert.createdAt
-if timeSinceLastAlert < COOLDOWN_SECONDS → skip alert
-```
-
-Default cooldown: **1 hour** (configurable via `ALERT_COOLDOWN_SECONDS` env var).
-
----
-
-### 5. Feature Flags: Runtime Configurability
-
-The `/api/config/flags` endpoint returns:
-```json
-{
-  "enableRiderFeedback": true,
-  "enableMarshalFeedback": false,
-  "enableTripIdField": true,
-  "enableSentimentDetails": true,
-  "enableAlertDashboard": true
-}
-```
-
-The frontend fetches these flags on page load and **conditionally renders** UI sections. This means we can enable/disable features (like marshal feedback) without deploying new code.
-
----
-
-## OOP Principles Used
-
-| Principle | Where Applied |
-|-----------|--------------|
-| **Single Responsibility** | Each class has one job (e.g., `AlertService` only handles alerts) |
-| **Open/Closed** | `IQueue<T>` interface — swap InMemory for Redis without changing consumers |
-| **Dependency Inversion** | Controllers depend on interfaces, not concrete classes |
-| **Dependency Injection** | All dependencies passed via constructor (see `Server.ts`) |
-| **Singleton** | `Database` class ensures one MongoDB connection pool |
-| **Repository Pattern** | Data access isolated in `*Repository` classes |
-
----
-
-## Project Structure
-
-```
-backend/src/
-├── config/
-│   ├── Database.ts              # Singleton MongoDB connection
-│   └── FeatureFlags.ts          # Static feature flag config
-├── interfaces/
-│   ├── ISentimentAnalyzer.ts    # Sentiment engine contract
-│   ├── IQueue.ts                # Queue abstraction contract
-│   ├── IDriverService.ts        # Driver operations contract
-│   ├── IAlertService.ts         # Alert system contract
-│   └── index.ts                 # Barrel exports
-├── types/
-│   ├── model.types.ts           # MongoDB document types
-│   ├── request.types.ts         # API request DTOs
-│   └── response.types.ts        # API response DTOs
-├── models/
-│   ├── Driver.model.ts          # Mongoose schema: Driver
-│   ├── Feedback.model.ts        # Mongoose schema: Feedback
-│   └── Alert.model.ts           # Mongoose schema: Alert
-├── repositories/
-│   ├── DriverRepository.ts      # Driver data access
-│   ├── FeedbackRepository.ts    # Feedback data access
-│   └── AlertRepository.ts       # Alert data access
-├── services/
-│   ├── SentimentAnalysisService.ts   # Bag-of-words engine
-│   ├── InMemoryQueue.ts              # Generic async queue
-│   ├── DriverService.ts              # Rolling average logic
-│   ├── AlertService.ts               # Threshold alert + anti-spam
-│   ├── FeedbackProcessorService.ts   # Queue worker orchestrator
-│   └── FeatureFlagService.ts         # Flag retrieval
-├── controllers/
-│   ├── FeedbackController.ts    # POST /api/feedback
-│   ├── DriverController.ts      # GET /api/drivers
-│   └── ConfigController.ts      # GET /api/config/flags
-├── routes/
-│   ├── feedback.routes.ts
-│   ├── driver.routes.ts
-│   └── config.routes.ts
-└── Server.ts                    # Entry point & DI composition root
-```
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/feedback` | Submit rider/marshal feedback |
-| `GET` | `/api/drivers` | List all drivers with scores |
-| `GET` | `/api/drivers/:driverId` | Get single driver details |
-| `GET` | `/api/drivers/alerts/all` | List all alerts |
-| `GET` | `/api/config/flags` | Get feature flags |
-| `GET` | `/api/health` | Health check |
-
-### Sample Request: Submit Feedback
-```bash
-curl -X POST http://localhost:5000/api/feedback \
-  -H "Content-Type: application/json" \
-  -d '{
-    "driverId": "DRV001",
-    "driverName": "Rajesh Kumar",
-    "tripId": "TRIP-1234",
-    "feedbackText": "Very rude driver, was speeding the whole time. Felt unsafe.",
-    "submittedBy": "rider"
-  }'
-```
-
-### Sample Response
-```json
-{
-  "success": true,
-  "message": "Feedback received and queued for processing.",
-  "data": {
-    "feedbackId": "fb_1708523456789",
-    "driverId": "DRV001",
-    "sentimentScore": 1,
-    "sentimentLabel": "Very Negative",
-    "matchedWords": ["-rude", "-speeding", "-unsafe"],
-    "queuePosition": 1
-  },
-  "timestamp": "2026-02-21T10:30:56.789Z"
-}
-```
-
----
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB (local or Atlas)
+- MongoDB
 
-### Installation
+### 1. Backend Setup
 ```bash
 cd backend
 npm install
-```
-
-### Running
-```bash
-# Development mode (with hot reload)
+# Ensure MongoDB is running locally or provide a MONGO_URI in .env
 npm run dev
-
-# Production build
-npm run build
-npm start
 ```
 
-### Environment Variables
-Copy `.env` and adjust values as needed:
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-MONGO_URI=mongodb://localhost:27017/driver-sentiment-engine
-PORT=5000
-QUEUE_POLL_INTERVAL_MS=2000
-ALERT_THRESHOLD=2.5
-ALERT_COOLDOWN_SECONDS=3600
-```
+
+### 3. Login
+- **Admin**
+- **Employee**
