@@ -125,7 +125,7 @@ export default function FeedbackPage() {
 
           {/* Form card */}
           {flags && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white shadow-sm border border-gray-200 p-4">
               <FeedbackForm featureFlags={flags} onSuccess={handleSuccess} />
             </div>
           )}
