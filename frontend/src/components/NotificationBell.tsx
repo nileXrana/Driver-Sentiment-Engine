@@ -75,19 +75,22 @@ export default function NotificationBell() {
   }, []);
 
   // ─── Derived values ───────────────────────────
-  // Fetch all drivers to check feedback count
-  const [drivers, setDrivers] = useState<{ driverId: string; totalTrips: number }[]>([]);
+  // State to track driver risk levels to determine bell status
+  const [drivers, setDrivers] = useState<{ driverId: string; totalFeedback: number }[]>([]);
   useEffect(() => {
-    ApiClient.getAllDrivers().then((ds) => {
-      setDrivers(ds.map(d => ({ driverId: d.driverId, totalTrips: d.totalTrips })));
-    });
+    const fetchDrivers = async () => {
+      const ds = await ApiClient.getAllDrivers();
+      setDrivers(ds.map(d => ({ driverId: d.driverId, totalFeedback: d.totalFeedback })));
+    };
+    fetchDrivers();
   }, []);
 
   // Only show alerts for drivers with >= 5 feedbacks
   const unresolvedAlerts = alerts.filter((a) => {
     if (resolvedIds.has(a._id)) return false;
+    // Alert only matters if the driver has >= 5 feedback
     const driver = drivers.find(d => d.driverId === a.driverId);
-    return driver && driver.totalTrips >= 5;
+    return driver && driver.totalFeedback >= 5;
   });
   const unresolvedCount = unresolvedAlerts.length;
 

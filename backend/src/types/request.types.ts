@@ -14,14 +14,11 @@ export interface SubmitFeedbackRequest {
   /** The driver's display name (used to auto-create driver records) */
   driverName: string;
 
-  /** Trip identifier to link feedback to a specific ride */
-  tripId: string;
-
   /** Raw feedback text - this gets analyzed by the sentiment engine */
   feedbackText: string;
 
-  /** Who is submitting: rider or marshal */
-  submittedBy: "rider" | "marshal";
+  /** The explicit 1-5 star rating from the user */
+  rating: number;
 
   /** Name of the user submitting feedback (for duplicate check before auth) */
   userName: string;

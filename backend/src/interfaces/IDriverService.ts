@@ -13,7 +13,7 @@ import { DriverDocument } from "../types/model.types";
 export interface IDriverService {
   /**
    * Update a driver's rolling average score.
-   * Uses incremental formula: newAvg = (totalScore + newScore) / (totalTrips + 1)
+   * Uses incremental formula: newAvg = (totalScore + newScore) / (totalFeedback + 1)
    * This avoids re-reading all past feedback from the database.
    */
   updateDriverScore(driverId: string, newSentimentScore: number): Promise<DriverDocument>;

@@ -37,7 +37,7 @@ export async function seedDrivers(): Promise<void> {
       { driverId },
       {
         $set: { name },                    // always sync the name from seed data
-        $setOnInsert: { driverId, totalScore: 0, totalTrips: 0, averageScore: 0, riskLevel: "LOW" },
+        $setOnInsert: { driverId, totalScore: 0, totalFeedback: 0, averageScore: 0, riskLevel: "LOW" },
       },
       { upsert: true }
     );

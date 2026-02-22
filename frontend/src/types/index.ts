@@ -30,9 +30,8 @@ export interface FeatureFlags {
 export interface SubmitFeedbackPayload {
   driverId: string;
   driverName: string;
-  tripId: string;
   feedbackText: string;
-  submittedBy: "rider" | "marshal";
+  rating: number;
   userName: string;
   feedbackDate: string;  // "YYYY-MM-DD"
 }
@@ -41,7 +40,7 @@ export interface FeedbackResult {
   feedbackId: string;
   driverId: string;
   sentimentScore: number;
-  sentimentLabel: string;
+  sentimentLabel: "positive" | "negative" | "neutral";
   matchedWords: string[];
   queuePosition: number;
 }
@@ -52,7 +51,7 @@ export interface Driver {
   driverId: string;
   name: string;
   averageScore: number;
-  totalTrips: number;
+  totalFeedback: number;
   riskLevel: "LOW" | "MEDIUM" | "HIGH";
 }
 
@@ -96,9 +95,9 @@ export interface AlertListProps {
 }
 
 export interface FeedbackHistoryItem {
-  tripId: string;
   sentimentScore: number;
-  sentimentLabel: string;
+  sentimentLabel: "positive" | "negative" | "neutral";
   feedbackText: string;
+  feedbackDate: string;
   createdAt: string;
 }

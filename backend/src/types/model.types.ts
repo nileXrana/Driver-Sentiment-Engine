@@ -16,11 +16,11 @@ export interface IDriver {
   /**
    * Rolling average fields:
    * Instead of querying all past feedback to compute the average,
-   * we store the running total and count. This gives us O(1) updates
-   * instead of O(n) recalculations each time a new feedback comes in.
+   * we store the sum and the count.
+   * newAverage = (totalScore + newScore) / (totalFeedback + 1)
    */
   totalScore: number;
-  totalTrips: number;
+  totalFeedback: number;
   averageScore: number;
 
   /** Risk classification derived from averageScore */
@@ -32,7 +32,7 @@ export interface IDriver {
 }
 
 /** Mongoose document = our interface + Mongoose internal fields */
-export interface DriverDocument extends IDriver, Document {}
+export interface DriverDocument extends IDriver, Document { }
 
 // ─── Feedback ────────────────────────────────────────────
 
@@ -40,14 +40,8 @@ export interface IFeedback {
   /** Which driver this feedback is about */
   driverId: string;
 
-  /** Which trip this feedback is associated with */
-  tripId: string;
-
   /** The raw text feedback entered by the user */
   feedbackText: string;
-
-  /** Who submitted it: "rider", "marshal", or "system" */
-  submittedBy: "rider" | "marshal" | "system";
 
   /** Name of the user submitting feedback (for duplicate checks before auth) */
   userName: string;
@@ -58,8 +52,8 @@ export interface IFeedback {
   /** The computed sentiment score (1-5) from our engine */
   sentimentScore: number;
 
-  /** The sentiment label: "Positive", "Negative", "Neutral" */
-  sentimentLabel: string;
+  /** The sentiment label: "positive", "negative", "neutral" */
+  sentimentLabel: "positive" | "negative" | "neutral";
 
   /** Words our engine matched for transparency */
   matchedWords: string[];
@@ -70,7 +64,7 @@ export interface IFeedback {
   createdAt: Date;
 }
 
-export interface FeedbackDocument extends IFeedback, Document {}
+export interface FeedbackDocument extends IFeedback, Document { }
 
 // ─── Alert ───────────────────────────────────────────────
 
@@ -84,4 +78,4 @@ export interface IAlert {
   createdAt: Date;
 }
 
-export interface AlertDocument extends IAlert, Document {}
+export interface AlertDocument extends IAlert, Document { }

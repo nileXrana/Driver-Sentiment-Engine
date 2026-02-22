@@ -18,19 +18,10 @@ const FeedbackSchema = new Schema<FeedbackDocument>(
       required: true,
       index: true, // We often query "all feedback for driver X"
     },
-    tripId: {
-      type: String,
-      required: true,
-    },
     feedbackText: {
       type: String,
       required: true,
       trim: true,
-    },
-    submittedBy: {
-      type: String,
-      enum: ["rider", "marshal", "system"],
-      required: true,
     },
     userName: {
       type: String,
@@ -50,6 +41,7 @@ const FeedbackSchema = new Schema<FeedbackDocument>(
     },
     sentimentLabel: {
       type: String,
+      enum: ["positive", "neutral", "negative"],
       required: true,
     },
     matchedWords: {

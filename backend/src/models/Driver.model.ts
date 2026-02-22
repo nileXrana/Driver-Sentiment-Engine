@@ -4,7 +4,7 @@
  * Mongoose schema and model for the Driver collection.
  * 
  * Key Design:
- * - totalScore and totalTrips enable O(1) rolling average updates.
+ * - totalScore and totalFeedback enable O(1) rolling average updates.
  * - riskLevel is derived from averageScore for quick dashboard queries.
  */
 
@@ -28,7 +28,7 @@ const DriverSchema = new Schema<DriverDocument>(
       type: Number,
       default: 0,
     },
-    totalTrips: {
+    totalFeedback: {
       type: Number,
       default: 0,
     },

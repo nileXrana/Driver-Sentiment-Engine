@@ -15,9 +15,9 @@ import { DriverTableProps, Driver } from "../../types";
 /** Map risk level to sentiment label */
 const getSentiment = (riskLevel: Driver["riskLevel"]): "Negative" | "Neutral" | "Positive" => {
   switch (riskLevel) {
-    case "HIGH":   return "Negative";
+    case "HIGH": return "Negative";
     case "MEDIUM": return "Neutral";
-    case "LOW":    return "Positive";
+    case "LOW": return "Positive";
   }
 };
 
@@ -84,7 +84,7 @@ export default function DriverTable({ drivers, onDriverSelect }: DriverTableProp
                 <span className="text-[9px] sm:text-[10px] text-gray-500">/5</span>
               </td>
               <td className="px-2 sm:px-4 py-1.5 sm:py-2 text-center">
-                {driver.totalTrips < 5 ? (
+                {driver.totalFeedback < 5 ? (
                   <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-gray-100 text-gray-500">
                     Not enough data
                   </span>

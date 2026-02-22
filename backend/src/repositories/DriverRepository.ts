@@ -46,7 +46,7 @@ export class DriverRepository {
         driverId,
         name,
         totalScore: 0,
-        totalTrips: 0,
+        totalFeedback: 0,
         averageScore: 0,
         riskLevel: "LOW",
       });
@@ -58,26 +58,27 @@ export class DriverRepository {
   }
 
   /**
-   * Atomically update the driver's rolling average fields.
-   * 
-   * We use MongoDB's $inc and $set operators to ensure this is
-   * an atomic operation — no race conditions if two feedbacks
-   * arrive simultaneously for the same driver.
+   * Atomic update of a driver's score.
+   * This is much safer than reading the driver, computing, and saving it back,
+   * which can cause race conditions if multiple feedbacks arrive simultaneously.
    */
   public async updateScoreAtomically(
     driverId: string,
     newScore: number,
     newAverageScore: number,
-    newRiskLevel: "LOW" | "MEDIUM" | "HIGH"
+    newRiskLevel: string
   ): Promise<DriverDocument | null> {
     try {
       return await DriverModel.findOneAndUpdate(
         { driverId },
         {
-          $inc: { totalScore: newScore, totalTrips: 1 },
-          $set: { averageScore: newAverageScore, riskLevel: newRiskLevel },
+          $inc: { totalScore: newScore, totalFeedback: 1 },
+          $set: {
+            averageScore: newAverageScore,
+            riskLevel: newRiskLevel,
+          },
         },
-        { new: true } // Return the updated document, not the old one
+        { new: true } // Return the updated document
       );
     } catch (error) {
       console.error(`[DriverRepository] Error updating score for '${driverId}':`, error);

@@ -68,7 +68,8 @@ export class FeedbackProcessorService {
     queuePosition: number;
   }> {
     // Step 1: Analyze sentiment right away (synchronous, O(n) on text length)
-    const sentimentResult = this.sentimentEngine.analyze(request.feedbackText);
+    // Pass the explicit user rating as the second parameter to blend it
+    const sentimentResult = this.sentimentEngine.analyze(request.feedbackText, request.rating);
 
     // Step 2: Ensure the driver record exists (create if first-time)
     await this.driverService.findOrCreateDriver(request.driverId, request.driverName);
@@ -135,9 +136,7 @@ export class FeedbackProcessorService {
       // Step 1: Save feedback to the database
       const savedFeedback = await this.feedbackRepository.create({
         driverId: request.driverId,
-        tripId: request.tripId,
         feedbackText: request.feedbackText,
-        submittedBy: request.submittedBy,
         userName: request.userName,
         feedbackDate: request.feedbackDate,
         sentimentScore: sentimentResult.score,

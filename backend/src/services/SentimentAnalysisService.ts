@@ -37,13 +37,13 @@ export class SentimentAnalysisService implements ISentimentAnalyzer {
       // General positive
       "good", "great", "excellent", "amazing", "wonderful", "fantastic",
       "awesome", "outstanding", "perfect", "superb", "brilliant",
-      
+
       // Driving-specific positive
       "safe", "smooth", "clean", "friendly", "polite", "punctual",
       "comfortable", "helpful", "professional", "courteous", "pleasant",
       "careful", "fast", "efficient", "reliable", "respectful",
       "kind", "nice", "calm", "gentle", "skilled",
-      
+
       // Experience positive
       "loved", "enjoyed", "happy", "satisfied", "impressed",
       "recommend", "best", "thank", "thanks", "appreciate",
@@ -53,12 +53,12 @@ export class SentimentAnalysisService implements ISentimentAnalyzer {
       // General negative
       "bad", "terrible", "horrible", "awful", "worst", "poor",
       "dreadful", "disappointing", "unacceptable", "pathetic",
-      
+
       // Driving-specific negative
       "rude", "dangerous", "reckless", "dirty", "late", "slow",
       "aggressive", "unsafe", "careless", "rough", "unprofessional",
       "rash", "speeding", "honking", "yelling", "smoking",
-      
+
       // Experience negative
       "hated", "angry", "upset", "scared", "frustrated",
       "complained", "never", "avoid", "worse", "nightmare",
@@ -75,9 +75,10 @@ export class SentimentAnalysisService implements ISentimentAnalyzer {
    * Analyze a feedback string and produce a sentiment score.
    * 
    * @param text - Raw feedback like "The driver was very rude and aggressive"
+   * @param userRating - Optional explicit 1-5 star rating from the user
    * @returns SentimentResult with score (1-5), label, and matched words
    */
-  public analyze(text: string): SentimentResult {
+  public analyze(text: string, userRating?: number): SentimentResult {
     // Step 1: Tokenize — convert to lowercase and split into individual words
     // We remove punctuation so "great!" becomes "great" and matches our dictionary
     const words: string[] = this.tokenize(text);
@@ -98,14 +99,23 @@ export class SentimentAnalysisService implements ISentimentAnalyzer {
       }
     }
 
-    // Step 3: Calculate the sentiment score on a 1-5 scale
-    const score = this.calculateScore(positiveCount, negativeCount, words.length);
+    // Step 3: Calculate the NLP sentiment score on a 1-5 scale
+    const nlpScore = this.calculateScore(positiveCount, negativeCount, words.length);
 
-    // Step 4: Derive a human-readable label from the score
-    const label = this.scoreToLabel(score);
+    // Step 4: If a user explicitly provided a 1-5 rating, blend it 50/50 with the NLP score.
+    // Otherwise, just rely purely on the text analysis.
+    let finalScore = nlpScore;
+    if (userRating !== undefined && userRating >= 1 && userRating <= 5) {
+      finalScore = (nlpScore + userRating) / 2;
+      // Round to one decimal place for clean dashboard rendering
+      finalScore = Math.round(finalScore * 10) / 10;
+    }
+
+    // Step 5: Derive a human-readable label from the final combined score
+    const label = this.scoreToLabel(finalScore);
 
     return {
-      score,
+      score: finalScore,
       label,
       matchedWordCount: positiveCount + negativeCount,
       matchedWords,
@@ -154,15 +164,9 @@ export class SentimentAnalysisService implements ISentimentAnalyzer {
     return Math.round(rawScore * 10) / 10;
   }
 
-  /**
-   * Map a numeric score to a human-readable label.
-   * These labels are useful for the frontend dashboard display.
-   */
-  private scoreToLabel(score: number): string {
-    if (score >= 4.5) return "Very Positive";
-    if (score >= 3.5) return "Positive";
-    if (score >= 2.5) return "Neutral";
-    if (score >= 1.5) return "Negative";
-    return "Very Negative";
+  private scoreToLabel(score: number): "positive" | "neutral" | "negative" {
+    if (score >= 3.5) return "positive";
+    if (score >= 2.5) return "neutral";
+    return "negative";
   }
 }

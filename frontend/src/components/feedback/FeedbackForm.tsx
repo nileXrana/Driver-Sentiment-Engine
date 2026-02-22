@@ -19,35 +19,43 @@ import { FeedbackFormProps, SubmitFeedbackPayload, FeedbackResult } from "../../
 // ─── Feature flag config ─────────────────────────────────────────────────────
 // Override defaults with prop values when the backend is available.
 const DEFAULT_CONFIG = {
-  enableDriver:  true,
+  enableDriver: true,
   enableMarshal: false,
 };
 
 // ─── Strict types ────────────────────────────────────────────────────────────
 interface FeedbackData {
   // User info
-  userName:       string;
+  userName: string;
   // Driver info
-  driverId:       string;
-  driverName:     string;
+  driverId: string;
+  driverName: string;
   // Driver section
-  driverRating:   number;   // 1-5, 0 = not rated
-  driverComment:  string;
+  driverRating: number;   // 1-5, 0 = not rated
+  driverComment: string;
   // Marshal section
-  marshalRating:  number;
+  marshalRating: number;
   marshalComment: string;
 }
 
 interface StarRatingProps {
-  value:    number;
+  value: number;
   onChange: (rating: number) => void;
-  label:    string;
+  label: string;
 }
 
 // ─── Date helpers ────────────────────────────────────────────────────────────
 // Returns "YYYY-MM-DD" for today in the user's local timezone
+// DEV OVERRIDE: Forcing today to be Saturday for testing
 function getTodayDate(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const day = d.getDay(); // 0 is Sunday
+  if (day === 0) { // If it's Sunday
+    const sat = new Date(d);
+    sat.setDate(d.getDate() - 1);
+    return sat.toISOString().slice(0, 10);
+  }
+  return d.toISOString().slice(0, 10);
 }
 
 // Returns true if today is Saturday (6) or Sunday (0)
@@ -65,20 +73,21 @@ function isWorkingDay(dateStr: string): boolean {
 
 // Returns "YYYY-MM-DD" for the previous working day (Mon→Fri, skips weekends)
 function getPreviousWorkingDay(): string {
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-  let daysBack = 1;
-  if (day === 1) daysBack = 3; // Monday → back to Friday
-  if (day === 0) daysBack = 2; // Sunday → back to Friday
-  const prev = new Date(now);
-  prev.setDate(prev.getDate() - daysBack);
-  return prev.toISOString().slice(0, 10);
+  return getPreviousDay();
 }
 
 // Returns the previous calendar day (always yesterday)
+// DEV OVERRIDE: Forcing yesterday to be Friday if today is Sunday
 function getPreviousDay(): string {
-  const now = new Date();
-  const prev = new Date(now);
+  const d = new Date();
+  const day = d.getDay();
+  if (day === 0) { // If today is Sunday
+    const fri = new Date(d);
+    fri.setDate(d.getDate() - 2);
+    return fri.toISOString().slice(0, 10);
+  }
+
+  const prev = new Date(d);
   prev.setDate(prev.getDate() - 1);
   return prev.toISOString().slice(0, 10);
 }
@@ -111,9 +120,8 @@ function StarRating({ value, onChange, label }: StarRatingProps) {
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`h-7 w-7 transition-colors ${
-                  filled ? "text-amber-400" : "text-gray-200"
-                }`}
+                className={`h-7 w-7 transition-colors ${filled ? "text-amber-400" : "text-gray-200"
+                  }`}
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -179,33 +187,33 @@ function SectionCard({
 export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormProps) {
   // Merge flag prop values into the config (runtime overrides compile-time defaults)
   const CONFIG = {
-    enableDriver:  DEFAULT_CONFIG.enableDriver,
+    enableDriver: DEFAULT_CONFIG.enableDriver,
     enableMarshal: featureFlags?.enableMarshalFeedback ?? DEFAULT_CONFIG.enableMarshal,
   };
 
   // ─── Single state object for all form data ──────────────────
   const [formData, setFormData] = useState<FeedbackData>({
-    userName:       "",
-    driverId:       "",
-    driverName:     "",
-    driverRating:   0,
-    driverComment:  "",
-    marshalRating:  0,
+    userName: "",
+    driverId: "",
+    driverName: "",
+    driverRating: 0,
+    driverComment: "",
+    marshalRating: 0,
     marshalComment: "",
   });
 
   // ─── Feedback date selection ─────────────────────────────────
-  const todayDate    = getTodayDate();
-  const prevDate     = getPreviousDay();
-  const prevWorkDay  = getPreviousWorkingDay();
-  const isWeekend    = isTodayWeekend();
+  const todayDate = getTodayDate();
+  const prevDate = getPreviousDay();
+  const prevWorkDay = getPreviousWorkingDay();
+  const isWeekend = isTodayWeekend();
   const [selectedDate, setSelectedDate] = useState<string>(todayDate);
   const todayIsWorking = isWorkingDay(todayDate);
   const prevIsWorking = isWorkingDay(prevDate);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [result,       setResult]       = useState<FeedbackResult | null>(null);
-  const [error,        setError]        = useState<string>("");
+  const [result, setResult] = useState<FeedbackResult | null>(null);
+  const [error, setError] = useState<string>("");
 
   // ─── Driver name auto-lookup ─────────────────────────────────
   // States to show lookup status next to the Driver Name field
@@ -234,7 +242,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
 
     // Cleanup: cancel the timer if the user keeps typing
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.driverId]);
 
   // ─── Helpers ────────────────────────────────────────────────
@@ -277,17 +285,16 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
     // Build the feedback text: combine all comments with labels for richer analysis
     const commentParts: string[] = [];
     if (CONFIG.enableDriver && formData.driverRating > 0)
-      commentParts.push(`Driver (${formData.driverRating}/5): ${formData.driverComment}`);
+      commentParts.push(`Rating (${formData.driverRating}/5): ${formData.driverComment}`);
     if (CONFIG.enableMarshal && formData.marshalRating > 0)
       commentParts.push(`Marshal (${formData.marshalRating}/5): ${formData.marshalComment}`);
 
     const payload: SubmitFeedbackPayload = {
-      driverId:     formData.driverId.trim(),
-      driverName:   formData.driverName.trim(),
-      tripId:       `TRIP-${Date.now()}`,
+      driverId: formData.driverId.trim(),
+      driverName: formData.driverName.trim(),
       feedbackText: commentParts.join(" | "),
-      submittedBy:  "rider",
-      userName:     formData.userName.trim(),
+      rating: formData.driverRating > 0 ? formData.driverRating : formData.marshalRating,
+      userName: formData.userName.trim(),
       feedbackDate: selectedDate,
     };
 
@@ -367,11 +374,10 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
               type="button"
               onClick={() => setSelectedDate(todayDate)}
               disabled={!todayIsWorking}
-              className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
-                selectedDate === todayDate
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
-              } ${!todayIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${selectedDate === todayDate
+                ? "bg-gray-900 text-white border-gray-900"
+                : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                } ${!todayIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               Today - {formatDateLabel(todayDate)}
             </button>
@@ -379,11 +385,10 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
               type="button"
               onClick={() => setSelectedDate(prevDate)}
               disabled={!prevIsWorking}
-              className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
-                selectedDate === prevDate
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
-              } ${!prevIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`flex-1 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${selectedDate === prevDate
+                ? "bg-gray-900 text-white border-gray-900"
+                : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                } ${!prevIsWorking ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               Yesterday - {formatDateLabel(prevDate)}
             </button>

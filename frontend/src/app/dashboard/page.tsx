@@ -57,36 +57,21 @@ export default function DashboardPage() {
     return () => clearInterval(interval); // Cleanup on unmount
   }, [fetchDashboardData]);
 
-  /**
-   * When a driver is selected from the table, fetch their feedback history
-   * for the score trend chart. We re-use the generic API but we'll
-   * pass the driver's existing feedback data as mock history for the chart.
-   */
-  const handleDriverSelect = (driverId: string): void => {
+  const handleDriverSelect = async (driverId: string): Promise<void> => {
     setSelectedDriverId(driverId);
 
-    // For the chart, we'll use the driver's data to generate a simple view.
-    // In a full implementation, we'd have a GET /api/feedback/:driverId endpoint.
-    const driver = drivers.find((d: Driver) => d.driverId === driverId);
-    if (driver && driver.totalTrips > 0) {
-      // Generate synthetic history points from the average to show the chart works
-      // In production, this would come from a real API call
-      const syntheticHistory: FeedbackHistoryItem[] = Array.from(
-        { length: Math.min(driver.totalTrips, 10) },
-        (_, i) => ({
-          tripId: `TRIP-${i + 1}`,
-          sentimentScore: Math.max(1, Math.min(5,
-            driver.averageScore + (Math.random() - 0.5) * 1.5
-          )),
-          sentimentLabel: driver.averageScore >= 3.5 ? "Positive" : "Negative",
-          feedbackText: "",
-          createdAt: new Date(Date.now() - (driver.totalTrips - i) * 86400000).toISOString(),
-        })
+    try {
+      const feedbackData = await ApiClient.getDriverFeedback(driverId);
+      // Ensure the history is sorted chronologically for the chart if not already
+      const sortedHistory = feedbackData.sort((a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
-      setSelectedDriverFeedback(syntheticHistory);
-    } else {
+      setSelectedDriverFeedback(sortedHistory);
+    } catch (error) {
+      console.error("Failed to fetch driver feedback:", error);
       setSelectedDriverFeedback([]);
     }
+
     // Scroll to chart after state updates
     setTimeout(() => {
       if (chartRef.current) {
@@ -97,107 +82,107 @@ export default function DashboardPage() {
 
   // ─── Summary Stats ────────────────────────────
   const totalDrivers = drivers.length;
-  const positiveCount = drivers.filter((d: Driver) => d.riskLevel === "LOW" && d.totalTrips >= 5).length;
-  const neutralCount = drivers.filter((d: Driver) => d.riskLevel === "MEDIUM" && d.totalTrips >= 5).length;
-  const negativeCount = drivers.filter((d: Driver) => d.riskLevel === "HIGH" && d.totalTrips >= 5).length;
-  const notEnoughDataCount = drivers.filter((d: Driver) => d.totalTrips < 5).length;
+  const positiveCount = drivers.filter((d: Driver) => d.riskLevel === "LOW" && d.totalFeedback >= 5).length;
+  const neutralCount = drivers.filter((d: Driver) => d.riskLevel === "MEDIUM" && d.totalFeedback >= 5).length;
+  const negativeCount = drivers.filter((d: Driver) => d.riskLevel === "HIGH" && d.totalFeedback >= 5).length;
+  const notEnoughDataCount = drivers.filter((d: Driver) => d.totalFeedback < 5).length;
 
   const selectedDriver = drivers.find((d: Driver) => d.driverId === selectedDriverId);
 
   return (
     <div className="min-h-screen bg-blue-50/40">
       <div className="max-w-6xl mx-auto py-6 sm:py-10 px-2 sm:px-6">
-      {/* Page Header */}
-      <div className="mb-5 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-sm sm:text-base text-gray-500">
-          Monitor driver sentiment scores in real-time. Data refreshes every 10 seconds.
-        </p>
-      </div>
-
-      {/* Error Banner */}
-      {error && (
-        <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
+        {/* Page Header */}
+        <div className="mb-5 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-sm sm:text-base text-gray-500">
+            Monitor driver sentiment scores in real-time. Data refreshes every 10 seconds.
+          </p>
         </div>
-      )}
 
-      {/* Loading State */}
-      {loading ? (
-        <div className="text-center py-16">
-          <div className="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-          <p className="mt-3 text-gray-500">Loading dashboard...</p>
-        </div>
-      ) : (
-        <>
-          {/* ─── Summary Cards ──────────────────────── */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-4 mb-3 sm:mb-8">
-            <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
-              <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{totalDrivers}</p>
-            </div>
-            <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Not enough data</p>
-              <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{notEnoughDataCount}</p>
-            </div>
-            <div className="col-span-2 sm:col-span-3 grid grid-cols-3 gap-1.5 sm:gap-4">
-              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Positive</p>
-                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{positiveCount}</p>
-              </div>
-              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Neutral</p>
-                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{neutralCount}</p>
-              </div>
-              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Negative</p>
-                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{negativeCount}</p>
-              </div>
-            </div>
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
           </div>
+        )}
 
-          {/* ─── Driver Table ─────────────────────── */}
-          <div className="mb-5 sm:mb-8">
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <h2 className="text-sm sm:text-base font-medium sm:font-semibold text-gray-900 tracking-tight">Driver Scores</h2>
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-500">Sort by</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'driverId' | 'name' | 'score')}
-                  className="text-sm px-2 py-1 border border-gray-200 rounded-md bg-white"
-                >
-                  <option value="driverId">Driver ID</option>
-                  <option value="name">Name</option>
-                  <option value="score">Score</option>
-                </select>
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+            <p className="mt-3 text-gray-500">Loading dashboard...</p>
+          </div>
+        ) : (
+          <>
+            {/* ─── Summary Cards ──────────────────────── */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-4 mb-3 sm:mb-8">
+              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
+                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{totalDrivers}</p>
+              </div>
+              <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Not enough data</p>
+                <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{notEnoughDataCount}</p>
+              </div>
+              <div className="col-span-2 sm:col-span-3 grid grid-cols-3 gap-1.5 sm:gap-4">
+                <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Positive</p>
+                  <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{positiveCount}</p>
+                </div>
+                <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Neutral</p>
+                  <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{neutralCount}</p>
+                </div>
+                <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Negative</p>
+                  <p className="text-lg sm:text-3xl font-bold text-gray-900 mt-0.5 sm:mt-1">{negativeCount}</p>
+                </div>
               </div>
             </div>
-            <div className="rounded-md sm:rounded-lg border border-gray-200 overflow-x-auto">
-              <DriverTable drivers={
-                [...drivers].sort((a, b) => {
-                  if (sortBy === 'name') return a.name.localeCompare(b.name);
-                  if (sortBy === 'score') return b.averageScore - a.averageScore; // high -> low
-                  // default: driverId (ascending)
-                  return a.driverId.localeCompare(b.driverId);
-                })
-              } onDriverSelect={handleDriverSelect} />
-            </div>
-          </div>
 
-          {/* ─── Score Chart (shown when a driver is selected) ── */}
-          {selectedDriver && (
-            <div ref={chartRef} className="mb-5 sm:mb-8 p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <ScoreChart
-                driverName={selectedDriver.name}
-                feedbackHistory={selectedDriverFeedback}
-              />
+            {/* ─── Driver Table ─────────────────────── */}
+            <div className="mb-5 sm:mb-8">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <h2 className="text-sm sm:text-base font-medium sm:font-semibold text-gray-900 tracking-tight">Driver Scores</h2>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-500">Sort by</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'driverId' | 'name' | 'score')}
+                    className="text-sm px-2 py-1 border border-gray-200 rounded-md bg-white"
+                  >
+                    <option value="driverId">Driver ID</option>
+                    <option value="name">Name</option>
+                    <option value="score">Score</option>
+                  </select>
+                </div>
+              </div>
+              <div className="rounded-md sm:rounded-lg border border-gray-200 overflow-x-auto">
+                <DriverTable drivers={
+                  [...drivers].sort((a, b) => {
+                    if (sortBy === 'name') return a.name.localeCompare(b.name);
+                    if (sortBy === 'score') return b.averageScore - a.averageScore; // high -> low
+                    // default: driverId (ascending)
+                    return a.driverId.localeCompare(b.driverId);
+                  })
+                } onDriverSelect={handleDriverSelect} />
+              </div>
             </div>
-          )}
-        </>
-      )}
+
+            {/* ─── Score Chart (shown when a driver is selected) ── */}
+            {selectedDriver && (
+              <div ref={chartRef} className="mb-5 sm:mb-8 p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <ScoreChart
+                  driverName={selectedDriver.name}
+                  feedbackHistory={selectedDriverFeedback}
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

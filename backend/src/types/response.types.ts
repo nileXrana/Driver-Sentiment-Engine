@@ -28,7 +28,7 @@ export interface DriverResponse {
   driverId: string;
   name: string;
   averageScore: number;
-  totalTrips: number;
+  totalFeedback: number;
   riskLevel: "LOW" | "MEDIUM" | "HIGH";
 }
 

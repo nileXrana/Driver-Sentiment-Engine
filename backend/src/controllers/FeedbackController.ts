@@ -29,6 +29,7 @@ export class FeedbackController {
     // Bind 'this' context so it works correctly when Express calls the method
     this.submitFeedback = this.submitFeedback.bind(this);
     this.checkDuplicate = this.checkDuplicate.bind(this);
+    this.getDriverFeedback = this.getDriverFeedback.bind(this);
   }
 
   /**
@@ -56,6 +57,28 @@ export class FeedbackController {
     } catch (error) {
       console.error("[FeedbackController] Error in checkDuplicate:", error);
       res.status(500).json(buildErrorResponse("Failed to check feedback."));
+    }
+  }
+
+  /**
+   * GET /api/feedback/:driverId
+   * 
+   * Retrieves all feedback history for a specific driver.
+   */
+  public async getDriverFeedback(req: Request, res: Response): Promise<void> {
+    try {
+      const { driverId } = req.params;
+
+      if (!driverId) {
+        res.status(400).json(buildErrorResponse("Missing 'driverId' parameter."));
+        return;
+      }
+
+      const feedbackData = await this.feedbackRepository.findByDriverId(driverId);
+      res.status(200).json(buildSuccessResponse(feedbackData, `Found ${feedbackData.length} feedback items.`));
+    } catch (error) {
+      console.error("[FeedbackController] Error in getDriverFeedback:", error);
+      res.status(500).json(buildErrorResponse("Failed to retrieve feedback."));
     }
   }
 
@@ -111,14 +134,11 @@ export class FeedbackController {
     if (!body.driverName || typeof body.driverName !== "string") {
       return "Missing or invalid 'driverName'. Must be a non-empty string.";
     }
-    if (!body.tripId || typeof body.tripId !== "string") {
-      return "Missing or invalid 'tripId'. Must be a non-empty string.";
-    }
     if (!body.feedbackText || typeof body.feedbackText !== "string") {
       return "Missing or invalid 'feedbackText'. Must be a non-empty string.";
     }
-    if (!body.submittedBy || !["rider", "marshal"].includes(body.submittedBy)) {
-      return "Missing or invalid 'submittedBy'. Must be 'rider' or 'marshal'.";
+    if (typeof body.rating !== "number" || body.rating < 1 || body.rating > 5) {
+      return "Missing or invalid 'rating'. Must be a number between 1 and 5.";
     }
     if (!body.userName || typeof body.userName !== "string") {
       return "Missing or invalid 'userName'. Must be a non-empty string.";

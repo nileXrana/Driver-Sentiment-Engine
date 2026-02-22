@@ -9,12 +9,12 @@
  * │ Instead of: AVG = SUM(all scores) / COUNT(all scores)         │
  * │   which requires reading ALL past feedback → O(n)            │
  * │                                                               │
- * │ We store: totalScore and totalTrips in the driver document.   │
- * │ Update:   newAvg = (totalScore + newScore) / (totalTrips + 1)│
+ * │ We store: totalScore and totalFeedback in the driver document.   │
+ * │ Update:   newAvg = (totalScore + newScore) / (totalFeedback + 1)│
  * │   This is O(1) — we only read/write the driver document.     │
  * │                                                               │
- * │ Savings: If a driver has 10,000 trips, the naive approach     │
- * │ reads 10,000 feedback docs. Ours reads 1 document.           │
+ * │ Savings: If a driver has 10,000 feedback items, the naive     │
+ * │ approach reads 10,000 feedback docs. Ours reads 1 document.  │
  * └──────────────────────────────────────────────────────────────┘
  */
 
@@ -45,8 +45,8 @@ export class DriverService implements IDriverService {
 
       // Step 2: Compute the new rolling average (O(1) operation)
       const newTotalScore = driver.totalScore + newSentimentScore;
-      const newTotalTrips = driver.totalTrips + 1;
-      const newAverageScore = Math.round((newTotalScore / newTotalTrips) * 100) / 100;
+      const newTotalFeedback = driver.totalFeedback + 1;
+      const newAverageScore = Math.round((newTotalScore / newTotalFeedback) * 100) / 100;
 
       // Step 3: Derive risk level from the new average
       const newRiskLevel = this.classifyRiskLevel(newAverageScore);

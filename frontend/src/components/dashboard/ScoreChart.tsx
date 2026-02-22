@@ -24,7 +24,8 @@ export default function ScoreChart({ driverName, feedbackHistory }: ScoreChartPr
     name: `#${index + 1}`,
     score: item.sentimentScore,
     label: item.sentimentLabel,
-    trip: item.tripId,
+    feedbackText: item.feedbackText,
+    date: item.feedbackDate || item.createdAt, // fallback to createdAt if missing
   }));
 
   if (chartData.length === 0) {
@@ -34,6 +35,35 @@ export default function ScoreChart({ driverName, feedbackHistory }: ScoreChartPr
       </div>
     );
   }
+
+  // Custom Tooltip Component
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const parsedDate = new Date(data.date).toLocaleDateString();
+      return (
+        <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-lg text-sm max-w-xs">
+          <div className="flex justify-between items-center mb-1">
+            <p className="font-semibold text-gray-800">{label}</p>
+            <span className="text-xs text-gray-400 ml-3">{parsedDate}</span>
+          </div>
+          <div className="mb-2 mt-1">
+            <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${data.label === 'positive' ? 'bg-green-100 text-green-800' :
+              data.label === 'negative' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+              {/* Capitalize first letter of label for display */}
+              {data.label ? data.label.charAt(0).toUpperCase() + data.label.slice(1) : 'Neutral'}
+            </span>
+          </div>
+          {data.feedbackText && (
+            <p className="text-gray-700 italic text-xs border-t pt-2 mt-2">"{data.feedbackText}"</p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div>
@@ -52,14 +82,7 @@ export default function ScoreChart({ driverName, feedbackHistory }: ScoreChartPr
             ticks={[1, 2, 3, 4, 5]}
             tick={{ fontSize: 12, fill: "#6b7280" }}
           />
-          <Tooltip
-            contentStyle={{
-              borderRadius: "8px",
-              border: "1px solid #e5e7eb",
-              fontSize: "13px",
-            }}
-            formatter={(value) => [`${value}/5`, "Score"]}
-          />
+          <Tooltip content={<CustomTooltip />} />
           <Line
             type="monotone"
             dataKey="score"

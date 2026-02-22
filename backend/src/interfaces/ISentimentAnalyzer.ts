@@ -13,8 +13,8 @@ export interface SentimentResult {
   /** Score on a 1-5 scale (1 = very negative, 5 = very positive) */
   score: number;
 
-  /** Human-readable label like "Positive", "Negative", "Neutral" */
-  label: string;
+  /** Human-readable label like "positive", "negative", "neutral" */
+  label: "positive" | "negative" | "neutral";
 
   /** How many sentiment-carrying words we actually found */
   matchedWordCount: number;
@@ -25,8 +25,10 @@ export interface SentimentResult {
 
 export interface ISentimentAnalyzer {
   /**
-   * Analyze a raw feedback string and return a structured sentiment result.
-   * @param text - The raw feedback text from a user
+   * Analyzes text (and optionally a literal star rating) and returns a structured sentiment result.
+   * 
+   * @param text The unstructured feedback text to analyze.
+   * @param userRating The explicit 1-5 star rating submitted by the user.
    */
-  analyze(text: string): SentimentResult;
+  analyze(text: string, userRating?: number): SentimentResult;
 }

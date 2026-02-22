@@ -17,5 +17,8 @@ export function createFeedbackRoutes(feedbackController: FeedbackController): Ro
   // POST /api/feedback — Submit new rider/marshal feedback
   router.post("/", feedbackController.submitFeedback);
 
+  // GET /api/feedback/:driverId — Get feedback history for a specific driver
+  router.get("/:driverId", feedbackController.getDriverFeedback);
+
   return router;
 }

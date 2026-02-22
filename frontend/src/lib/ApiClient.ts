@@ -96,4 +96,10 @@ export class ApiClient {
     const response = await this.request<Alert[]>("/drivers/alerts/all");
     return response.data!;
   }
+
+  /** GET /api/feedback/:driverId - Fetch all feedback history for a driver */
+  public static async getDriverFeedback(driverId: string): Promise<any[]> {
+    const response = await this.request<any[]>(`/feedback/${driverId}`);
+    return response.data || [];
+  }
 }

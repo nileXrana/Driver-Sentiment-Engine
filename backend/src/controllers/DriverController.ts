@@ -34,16 +34,16 @@ export class DriverController {
       const drivers = await this.driverService.getAllDrivers();
 
       // Map Mongoose documents to clean response DTOs
-      const driverResponses: DriverResponse[] = drivers.map((driver: DriverDocument) => ({
+      const responsePayload: DriverResponse[] = drivers.map((driver: DriverDocument) => ({
         driverId: driver.driverId,
         name: driver.name,
         averageScore: driver.averageScore,
-        totalTrips: driver.totalTrips,
+        totalFeedback: driver.totalFeedback,
         riskLevel: driver.riskLevel,
       }));
 
       res.status(200).json(
-        buildSuccessResponse(driverResponses, `Found ${driverResponses.length} drivers.`)
+        buildSuccessResponse(responsePayload, `Found ${responsePayload.length} drivers.`)
       );
     } catch (error) {
       console.error("[DriverController] Error in getAllDrivers:", error);
@@ -71,15 +71,15 @@ export class DriverController {
         return;
       }
 
-      const driverResponse: DriverResponse = {
+      const responsePayload: DriverResponse = {
         driverId: driver.driverId,
         name: driver.name,
+        totalFeedback: driver.totalFeedback,
         averageScore: driver.averageScore,
-        totalTrips: driver.totalTrips,
         riskLevel: driver.riskLevel,
       };
 
-      res.status(200).json(buildSuccessResponse(driverResponse));
+      res.status(200).json(buildSuccessResponse(responsePayload));
     } catch (error) {
       console.error("[DriverController] Error in getDriverById:", error);
       res.status(500).json(buildErrorResponse("Failed to retrieve driver."));
