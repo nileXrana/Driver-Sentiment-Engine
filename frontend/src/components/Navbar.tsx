@@ -116,9 +116,9 @@ export default function Navbar() {
             {isClient && (
               <button
                 onClick={isAuthenticated ? handleLogout : () => window.location.href = "/login"}
-                className={`ml-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${isHome
-                  ? "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-                  : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                className={`ml-1 px-4 py-2 rounded-lg text-sm font-medium transition ${isHome
+                  ? "text-white/70 hover:bg-white/10 hover:text-white"
+                  : "text-white/60 hover:bg-white/10 hover:text-white"
                   }`}
               >
                 {isAuthenticated ? "Logout" : "Login"}
