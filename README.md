@@ -4,6 +4,14 @@ A Project for analyzing driver performance through employee feedback. Features r
 
 This system was engineered with a focus on **algorithm efficiency, data structure optimization, and clean architecture (OOP).**
 
+## Screenshots
+
+| Home Page | Feedback Flow |
+|---|---|
+| ![alt text](readImg1.png) | ![alt text](readImg2.png) |
+| **Admin Dashboard** | **Driver's Score Graph** |
+| ![alt text](readImg3.png) | ![alt text](readImg4.png) |
+
 ## Key Features
 
 - **Real-time Sentiment Analysis**: Instantly categorizes text feedback into positive/neutral/negative ratings using a localized natural language processing bag-of-words approach, mathematically blended with quantitative star ratings.
@@ -22,13 +30,6 @@ This system was engineered with a focus on **algorithm efficiency, data structur
 - **Singleton Pattern**: Built a `Database` connection class strictly enforcing a single MongoDB connection pool across the application lifecycle to prevent memory leaks and max connection limits.
 - **Dependency Injection**: Root `Server.ts` explicitly wires all Repositories, Services, and Controllers together at boot via Constructors.
 
-## Screenshots
-
-| Home Page | Feedback Flow |
-|---|---|
-| ![alt text](readImg1.png) | ![alt text](readImg2.png) |
-| **Admin Dashboard** | **Driver's Score Graph** |
-| ![alt text](readImg3.png) | ![alt text](readImg4.png) |
 
 ## Tech Stack
 
@@ -58,5 +59,5 @@ npm run dev
 ```
 
 ### 3. Login
-- **Admin**
 - **Employee**
+- **Admin**
