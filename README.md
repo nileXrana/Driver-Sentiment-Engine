@@ -47,6 +47,8 @@ This system was engineered with a focus on **algorithm efficiency, data structur
 ```bash
 cd backend
 npm install
+# Copy the example environment variables
+cp .env.example .env
 # Ensure MongoDB is running locally or provide a MONGO_URI in .env
 npm run dev
 ```
