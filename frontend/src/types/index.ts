@@ -26,6 +26,18 @@ export interface FeatureFlags {
   enableAlertDashboard: boolean;
 }
 
+// ─── Auth ────────────────────────────────────────────
+
+export interface LoginPayload {
+  email?: string;
+  password?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  role: "ADMIN" | "EMPLOYEE";
+}
+
 // ─── Feedback ────────────────────────────────────────
 
 export interface SubmitFeedbackPayload {

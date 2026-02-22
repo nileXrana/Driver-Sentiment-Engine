@@ -8,8 +8,41 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+
+  // Auth State
+  const [isClient, setIsClient] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Read localStorage on mount (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+    const token = localStorage.getItem("authToken");
+    const role = localStorage.getItem("authRole");
+    setIsAuthenticated(!!token);
+    setUserRole(role);
+  }, []);
+
+  const handleAuthAction = () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else if (userRole === "ADMIN") {
+      router.push("/dashboard");
+    } else {
+      // It's an Employee, so log them out
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("authRole");
+      setIsAuthenticated(false);
+      setUserRole(null);
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
       {/* ── Background: looping video ─────────────── */}
@@ -48,12 +81,24 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Link
-                href="/feedback"
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-white text-gray-900 text-sm font-semibold tracking-wide rounded-lg hover:bg-gray-100 transition-all shadow-lg"
-              >
-                Give your valuable feedback
-              </Link>
+              {/* Dynamic Auth Button - Placed to the LEFT of Give Feedback */}
+              {isClient && (
+                <button
+                  onClick={handleAuthAction}
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-blue-600 text-white text-sm font-semibold tracking-wide rounded-lg hover:bg-blue-700 transition-all shadow-lg border border-blue-500/30"
+                >
+                  {!isAuthenticated ? "Login" : userRole === "ADMIN" ? "Dashboard" : "Logout"}
+                </button>
+              )}
+
+              {(!isAuthenticated || userRole !== "ADMIN") && (
+                <Link
+                  href="/feedback"
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-white text-gray-900 text-sm font-semibold tracking-wide rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+                >
+                  Give your valuable feedback
+                </Link>
+              )}
             </div>
           </div>
 

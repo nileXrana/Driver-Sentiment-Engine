@@ -49,14 +49,17 @@ import { FeatureFlagService } from "./services/FeatureFlagService";
 import { FeedbackController } from "./controllers/FeedbackController";
 import { DriverController } from "./controllers/DriverController";
 import { ConfigController } from "./controllers/ConfigController";
+import { AuthController } from "./controllers/AuthController";
 
 // Routes
 import { createFeedbackRoutes } from "./routes/feedback.routes";
 import { createDriverRoutes } from "./routes/driver.routes";
 import { createConfigRoutes } from "./routes/config.routes";
+import { createAuthRoutes } from "./routes/auth.routes";
 
 // Seed
 import { seedDrivers } from "./seed/driverSeed";
+import { AuthService } from "./services/AuthService";
 
 class Server {
   private readonly app: Application;
@@ -139,8 +142,10 @@ class Server {
     const feedbackController = new FeedbackController(this.feedbackProcessor, feedbackRepository);
     const driverController = new DriverController(driverService, alertService);
     const configController = new ConfigController(featureFlagService);
+    const authController = new AuthController();
 
     // ─── Layer 4: Routes ───────────────────────────
+    this.app.use("/api/auth", createAuthRoutes(authController));
     this.app.use("/api/feedback", createFeedbackRoutes(feedbackController));
     this.app.use("/api/drivers", createDriverRoutes(driverController));
     this.app.use("/api/config", createConfigRoutes(configController));
@@ -162,6 +167,9 @@ class Server {
       const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/driver-sentiment-engine";
       const database = Database.getInstance();
       await database.connect(mongoUri);
+
+      // Step 1.5: Zero-Config Demo User Seeding
+      await AuthService.seedDemoUsers();
 
       // Step 2: Seed the database with known drivers (upsert — safe on every boot)
       await seedDrivers();

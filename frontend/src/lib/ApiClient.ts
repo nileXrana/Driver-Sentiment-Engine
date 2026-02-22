@@ -57,6 +57,15 @@ export class ApiClient {
     return response.data!;
   }
 
+  /** POST /api/auth/login - Authenticate demo user and get JWT */
+  public static async login(payload: import("../types").LoginPayload): Promise<import("../types").AuthResponse> {
+    const response = await this.request<import("../types").AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return response.data!;
+  }
+
   /** POST /api/feedback - Submit rider/marshal feedback */
   public static async submitFeedback(
     payload: SubmitFeedbackPayload

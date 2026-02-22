@@ -33,6 +33,11 @@ export interface SubmitFeedbackRequest {
   driverRating?: number;
 }
 
+export interface LoginRequest {
+  email?: string;
+  password?: string;
+}
+
 export interface GetDriverRequest {
   /** Driver ID passed as a URL parameter */
   driverId: string;

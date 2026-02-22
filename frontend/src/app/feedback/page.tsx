@@ -7,11 +7,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ApiClient } from "../../lib/ApiClient";
 import FeedbackForm from "../../components/feedback/FeedbackForm";
 import { FeatureFlags } from "../../types";
 
 export default function FeedbackPage() {
+  const router = useRouter();
   const [flags, setFlags] = useState<FeatureFlags | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -22,6 +24,13 @@ export default function FeedbackPage() {
   };
 
   useEffect(() => {
+    // Auth Guard
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
     const loadFlags = async (): Promise<void> => {
       try {
         const featureFlags = await ApiClient.getFeatureFlags();
@@ -43,7 +52,7 @@ export default function FeedbackPage() {
     };
 
     loadFlags();
-  }, []);
+  }, [router]);
 
   return (
     <div className="h-[calc(100vh-4rem)] overflow-hidden bg-blue-50/40 flex flex-col lg:flex-row">

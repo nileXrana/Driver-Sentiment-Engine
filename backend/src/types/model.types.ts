@@ -34,6 +34,15 @@ export interface IDriver {
 /** Mongoose document = our interface + Mongoose internal fields */
 export interface DriverDocument extends IDriver, Document { }
 
+// ─── User ──────────────────────────────────────────────────
+export interface UserDocument extends Document {
+  email: string;
+  password?: string;
+  role: "ADMIN" | "EMPLOYEE";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // ─── Feedback ────────────────────────────────────────────
 
 export interface IFeedback {

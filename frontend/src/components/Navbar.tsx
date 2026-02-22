@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NotificationBell from "./NotificationBell";
 
 interface NavLink {
@@ -26,7 +26,29 @@ export default function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
-    const isDashboard = pathname?.startsWith("/dashboard");
+  const isDashboard = pathname?.startsWith("/dashboard");
+
+  // Auth State
+  const [isClient, setIsClient] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Read localStorage on mount (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+    const token = localStorage.getItem("authToken");
+    const role = localStorage.getItem("authRole");
+    setIsAuthenticated(!!token);
+    setUserRole(role);
+  }, [pathname]); // Re-run when route changes to keep UI perfectly synchronized
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authRole");
+    setIsAuthenticated(false);
+    setUserRole(null);
+    window.location.href = "/"; // Force hard refresh to clear any cached states
+  };
 
   return (
     <nav className={`${isHome ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "sticky top-0 z-50 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 shadow-lg"}`}>
@@ -62,33 +84,55 @@ export default function Navbar() {
           </button>
 
           {/* Desktop nav links */}
-          <div className="hidden sm:flex gap-1">
+          <div className="hidden sm:flex gap-1 items-center">
             {NAV_LINKS.map((link: NavLink) => {
-            const isActive = pathname === link.href;
-            const baseStyle = isHome
-              ? "text-white/70 hover:bg-white/10 hover:text-white"
-              : "text-white/60 hover:bg-white/10 hover:text-white";
-            const activeStyle = isHome
-              ? "bg-white/15 text-white"
-              : "bg-white/15 text-white";
+              // Strict Role-Based Visibility Guards
+              if (link.label === "Dashboard" && userRole === "EMPLOYEE") return null;
+              if (link.label === "Give Feedback" && userRole === "ADMIN") return null;
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  isActive ? activeStyle : baseStyle
-                }`}
+              const isActive = pathname === link.href;
+              const baseStyle = isHome
+                ? "text-white/70 hover:bg-white/10 hover:text-white"
+                : "text-white/60 hover:bg-white/10 hover:text-white";
+              const activeStyle = isHome
+                ? "bg-white/15 text-white"
+                : "bg-white/15 text-white";
+
+              let targetHref = link.href;
+              // If completely logged out but trying to hit Dashboard, route to login
+              if (link.label === "Dashboard" && !isAuthenticated) {
+                targetHref = "/login";
+              }
+
+              return (
+                <Link
+                  key={link.label}
+                  href={targetHref}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${isActive ? activeStyle : baseStyle
+                    }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            {/* Desktop Auth Toggle */}
+            {isClient && (
+              <button
+                onClick={isAuthenticated ? handleLogout : () => window.location.href = "/login"}
+                className={`ml-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${isHome
+                  ? "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                  }`}
               >
-                {link.label}
-              </Link>
-            );
-          })}
+                {isAuthenticated ? "Logout" : "Login"}
+              </button>
+            )}
           </div>
 
           {/* Reserve space for notification bell so navbar doesn't shift when toggling dashboard */}
           <div className="hidden sm:flex w-10 h-10 items-center justify-center">
-            {isDashboard ? <NotificationBell /> : <div className="w-10 h-10" />}
+            {isDashboard && isAuthenticated ? <NotificationBell /> : <div className="w-10 h-10" />}
           </div>
         </div>
       </div>
@@ -97,24 +141,43 @@ export default function Navbar() {
       {menuOpen && (
         <div className="sm:hidden px-4 pb-4">
           <div className="mt-1 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-          {NAV_LINKS.map((link: NavLink) => {
-            const isActive = pathname === link.href;
-            const baseStyle = "text-gray-700 hover:bg-gray-100 hover:text-gray-900";
-            const activeStyle = "bg-gray-900 text-white";
+            {NAV_LINKS.map((link: NavLink) => {
+              // Strict Role-Based Visibility Guards
+              if (link.label === "Dashboard" && userRole === "EMPLOYEE") return null;
+              if (link.label === "Give Feedback" && userRole === "ADMIN") return null;
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-                  isActive ? activeStyle : baseStyle
-                }`}
+              const isActive = pathname === link.href;
+              const baseStyle = "text-gray-700 hover:bg-gray-100 hover:text-gray-900";
+              const activeStyle = "bg-gray-900 text-white";
+
+              let targetHref = link.href;
+              // If completely logged out but trying to hit Dashboard, route to login
+              if (link.label === "Dashboard" && !isAuthenticated) {
+                targetHref = "/login";
+              }
+
+              return (
+                <Link
+                  key={link.label}
+                  href={targetHref}
+                  onClick={() => setMenuOpen(false)}
+                  className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition ${isActive ? activeStyle : baseStyle
+                    }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            {/* Mobile Auth Toggle */}
+            {isClient && (
+              <button
+                onClick={isAuthenticated ? handleLogout : () => window.location.href = "/login"}
+                className="w-full text-left block mt-2 px-4 py-2.5 rounded-lg text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 transition"
               >
-                {link.label}
-              </Link>
-            );
-          })}
+                {isAuthenticated ? "Logout" : "Login"}
+              </button>
+            )}
           </div>
         </div>
       )}
