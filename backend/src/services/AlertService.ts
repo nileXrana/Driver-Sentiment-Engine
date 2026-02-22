@@ -78,9 +78,8 @@ export class AlertService implements IAlertService {
       const alert = await this.alertRepository.create({
         driverId,
         driverName,
-        alertType: "LOW_SCORE",
         message: `Driver '${driverName}' (${driverId}) has a sentiment score of ${currentScore}, ` +
-                 `which is below the threshold of ${this.alertThreshold}. Immediate review recommended.`,
+          `which is below the threshold of ${this.alertThreshold}. Immediate review recommended.`,
         currentScore,
         threshold: this.alertThreshold,
       });

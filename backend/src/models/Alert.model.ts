@@ -22,11 +22,6 @@ const AlertSchema = new Schema<AlertDocument>(
       type: String,
       required: true,
     },
-    alertType: {
-      type: String,
-      enum: ["LOW_SCORE"],
-      required: true,
-    },
     message: {
       type: String,
       required: true,

@@ -21,11 +21,6 @@ const AlertSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
-    alertType: {
-        type: String,
-        enum: ["LOW_SCORE"],
-        required: true,
-    },
     message: {
         type: String,
         required: true,

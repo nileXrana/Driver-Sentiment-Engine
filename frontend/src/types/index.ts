@@ -61,7 +61,6 @@ export interface Alert {
   _id: string;
   driverId: string;
   driverName: string;
-  alertType: string;
   message: string;
   currentScore: number;
   threshold: number;

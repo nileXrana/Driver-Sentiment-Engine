@@ -71,7 +71,6 @@ export interface FeedbackDocument extends IFeedback, Document { }
 export interface IAlert {
   driverId: string;
   driverName: string;
-  alertType: "LOW_SCORE";
   message: string;
   currentScore: number;
   threshold: number;
