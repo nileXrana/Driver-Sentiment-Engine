@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const chartRef = useRef<HTMLDivElement>(null);
   // ─── State ─────────────────────────────────────
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [sortBy, setSortBy] = useState<'driverId' | 'name' | 'score'>('driverId');
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
   const [selectedDriverFeedback, setSelectedDriverFeedback] = useState<FeedbackHistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -159,11 +160,30 @@ export default function DashboardPage() {
 
           {/* ─── Driver Table ─────────────────────── */}
           <div className="mb-5 sm:mb-8">
-            <div className="flex items-center mb-2 sm:mb-3">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
               <h2 className="text-sm sm:text-base font-medium sm:font-semibold text-gray-900 tracking-tight">Driver Scores</h2>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-500">Sort by</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'driverId' | 'name' | 'score')}
+                  className="text-sm px-2 py-1 border border-gray-200 rounded-md bg-white"
+                >
+                  <option value="driverId">Driver ID</option>
+                  <option value="name">Name</option>
+                  <option value="score">Score</option>
+                </select>
+              </div>
             </div>
             <div className="rounded-md sm:rounded-lg border border-gray-200 overflow-x-auto">
-              <DriverTable drivers={drivers} onDriverSelect={handleDriverSelect} />
+              <DriverTable drivers={
+                [...drivers].sort((a, b) => {
+                  if (sortBy === 'name') return a.name.localeCompare(b.name);
+                  if (sortBy === 'score') return b.averageScore - a.averageScore; // high -> low
+                  // default: driverId (ascending)
+                  return a.driverId.localeCompare(b.driverId);
+                })
+              } onDriverSelect={handleDriverSelect} />
             </div>
           </div>
 

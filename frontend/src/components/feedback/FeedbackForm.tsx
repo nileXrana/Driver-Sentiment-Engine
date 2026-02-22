@@ -361,9 +361,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
             Feedback For <span className="text-red-400">*</span>
           </label>
           <p className="text-xs text-amber-600 mb-2">Feedback for weekdays (Mon–Fri) only.</p>
-          {!todayIsWorking && !prevIsWorking && (
-            <div className="mb-2 text-sm text-amber-700">Both options fall on a weekend; feedback is disabled until a working day.</div>
-          )}
+          {/* Weekend helper message removed per request */}
           <div className="flex gap-2">
             <button
               type="button"
