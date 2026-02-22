@@ -1,15 +1,4 @@
-/**
- * ApiClient.ts
- * -------------
- * Centralized HTTP client for communicating with the Express backend.
- * 
- * All API calls go through this class so we have a single place to:
- *   - Set the base URL
- *   - Handle errors consistently
- *   - Add auth headers later if needed
- * 
- * This is similar to Retrofit in Android or Axios instances in larger apps.
- */
+// API Client Wrapper
 
 import {
   ApiResponse,
@@ -23,10 +12,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
 export class ApiClient {
-  /**
-   * Generic fetch wrapper with error handling.
-   * Every API method calls this internally.
-   */
+  // Generic fetch wrapper
   private static async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -51,13 +37,13 @@ export class ApiClient {
     }
   }
 
-  /** GET /api/config/flags - Fetch feature flags for conditional rendering */
+  // Fetch feature flags
   public static async getFeatureFlags(): Promise<FeatureFlags> {
     const response = await this.request<FeatureFlags>("/config/flags");
     return response.data!;
   }
 
-  /** POST /api/auth/login - Authenticate demo user and get JWT */
+  // Authenticate user
   public static async login(payload: import("../types").LoginPayload): Promise<import("../types").AuthResponse> {
     const response = await this.request<import("../types").AuthResponse>("/auth/login", {
       method: "POST",
@@ -66,7 +52,7 @@ export class ApiClient {
     return response.data!;
   }
 
-  /** POST /api/feedback - Submit rider/marshal feedback */
+  // Submit feedback
   public static async submitFeedback(
     payload: SubmitFeedbackPayload
   ): Promise<FeedbackResult> {
@@ -77,7 +63,7 @@ export class ApiClient {
     return response.data!;
   }
 
-  /** GET /api/feedback/check - Check if user already submitted feedback for a driver on a date */
+  // Check for duplicate feedback
   public static async checkFeedbackExists(
     userName: string,
     driverId: string,
@@ -88,25 +74,25 @@ export class ApiClient {
     return response.data!.exists;
   }
 
-  /** GET /api/drivers - Fetch all drivers for the dashboard */
+  // Get all drivers
   public static async getAllDrivers(): Promise<Driver[]> {
     const response = await this.request<Driver[]>("/drivers");
     return response.data!;
   }
 
-  /** GET /api/drivers/:id - Fetch a single driver */
+  // Get driver by ID
   public static async getDriver(driverId: string): Promise<Driver> {
     const response = await this.request<Driver>(`/drivers/${driverId}`);
     return response.data!;
   }
 
-  /** GET /api/drivers/alerts/all - Fetch all alerts */
+  // Get all alerts
   public static async getAlerts(): Promise<Alert[]> {
     const response = await this.request<Alert[]>("/drivers/alerts/all");
     return response.data!;
   }
 
-  /** GET /api/feedback/:driverId - Fetch all feedback history for a driver */
+  // Get driver feedback history
   public static async getDriverFeedback(driverId: string): Promise<any[]> {
     const response = await this.request<any[]>(`/feedback/${driverId}`);
     return response.data || [];

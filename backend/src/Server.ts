@@ -1,29 +1,4 @@
-/**
- * Server.ts
- * ----------
- * Application Entry Point — the "main" method of our system.
- * 
- * This file is responsible for:
- *   1. Loading environment variables
- *   2. Connecting to MongoDB
- *   3. Wiring up all dependencies (Poor Man's Dependency Injection)
- *   4. Registering routes
- *   5. Starting the HTTP server and queue worker
- * 
- * ┌──────────────────────────────────────────────────────────────┐
- * │ DEPENDENCY INJECTION PATTERN (for interview)                  │
- * │                                                               │
- * │ In Spring Boot, dependencies are auto-wired with @Autowired. │
- * │ In our Express app, we manually wire them in this file.       │
- * │ This is called "Poor Man's DI" — simple but explicit.        │
- * │                                                               │
- * │ The object graph:                                             │
- * │   Repositories → Services → Controllers → Routes → Express   │
- * │                                                               │
- * │ Every class receives its dependencies through the constructor,│
- * │ never creating them internally. This makes testing easy.      │
- * └──────────────────────────────────────────────────────────────┘
- */
+// Application Entry Point
 
 import express, { Application } from "express";
 import cors from "cors";
@@ -77,7 +52,7 @@ class Server {
     this.setupMiddleware();
   }
 
-  /** Configure Express middleware */
+  // Configure Express middleware
   private setupMiddleware(): void {
     // Parse JSON request bodies
     this.app.use(express.json());
@@ -97,18 +72,14 @@ class Server {
     });
   }
 
-  /**
-   * Wire up all dependencies and register routes.
-   * This is our "composition root" — the single place where
-   * all objects are created and connected.
-   */
+  // Wire dependencies and routes
   private setupDependencies(): void {
-    // ─── Layer 1: Repositories (Data Access) ───────
+    // Repositories
     const driverRepository = new DriverRepository();
     const feedbackRepository = new FeedbackRepository();
     const alertRepository = new AlertRepository();
 
-    // ─── Layer 2: Services (Business Logic) ────────
+    // Services
     const sentimentEngine = new SentimentAnalysisService();
 
     const feedbackQueue = new InMemoryQueue<{
@@ -138,19 +109,19 @@ class Server {
       feedbackRepository
     );
 
-    // ─── Layer 3: Controllers (HTTP Handlers) ──────
+    // Controllers
     const feedbackController = new FeedbackController(this.feedbackProcessor, feedbackRepository);
     const driverController = new DriverController(driverService, alertService);
     const configController = new ConfigController(featureFlagService);
     const authController = new AuthController();
 
-    // ─── Layer 4: Routes ───────────────────────────
+    // Routes
     this.app.use("/api/auth", createAuthRoutes(authController));
     this.app.use("/api/feedback", createFeedbackRoutes(feedbackController));
     this.app.use("/api/drivers", createDriverRoutes(driverController));
     this.app.use("/api/config", createConfigRoutes(configController));
 
-    // ─── Health Check Endpoint ─────────────────────
+    // Health Check
     this.app.get("/api/health", (_req, res) => {
       res.status(200).json({
         status: "UP",
@@ -160,7 +131,7 @@ class Server {
     });
   }
 
-  /** Connect to MongoDB, wire dependencies, start server + queue worker */
+  // Start Server
   public async start(): Promise<void> {
     try {
       // Step 1: Connect to MongoDB
@@ -168,20 +139,20 @@ class Server {
       const database = Database.getInstance();
       await database.connect(mongoUri);
 
-      // Step 1.5: Zero-Config Demo User Seeding
+      // Demo User Seeding
       await AuthService.seedDemoUsers();
 
-      // Step 2: Seed the database with known drivers (upsert — safe on every boot)
+      // Seed Db
       await seedDrivers();
 
-      // Step 3: Wire up all dependencies
+      // Wire dependencies
       this.setupDependencies();
 
-      // Step 4: Start the queue worker
+      // Start worker
       const pollInterval = parseInt(process.env.QUEUE_POLL_INTERVAL_MS || "2000", 10);
       this.feedbackProcessor!.startWorker(pollInterval);
 
-      // Step 5: Start listening for HTTP requests
+      // Start HTTP server
       this.app.listen(this.port, () => {
         console.log("═══════════════════════════════════════════════════");
         console.log("  Driver Sentiment Engine - Backend Server");
@@ -196,7 +167,7 @@ class Server {
         console.log("═══════════════════════════════════════════════════");
       });
 
-      // Step 6: Graceful shutdown hooks
+      // Shutdown hooks
       this.setupGracefulShutdown(database);
     } catch (error) {
       console.error("[Server] Failed to start:", error);
@@ -204,7 +175,7 @@ class Server {
     }
   }
 
-  /** Handle SIGINT/SIGTERM for clean shutdown */
+  // Graceful shutdown
   private setupGracefulShutdown(database: Database): void {
     const shutdown = async (signal: string) => {
       console.log(`\n[Server] Received ${signal}. Shutting down gracefully...`);
@@ -218,6 +189,6 @@ class Server {
   }
 }
 
-// ─── Bootstrap the application ───────────────────────
+// Bootstrap application
 const server = new Server();
 server.start();

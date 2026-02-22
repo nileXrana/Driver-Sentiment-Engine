@@ -1,13 +1,4 @@
-/**
- * Database.ts
- * -----------
- * Singleton pattern for the MongoDB connection.
- * 
- * Why Singleton?
- * We want exactly ONE connection pool shared across the entire app.
- * Multiple connections would waste memory and hit MongoDB's connection limit.
- * This is the same pattern Spring Boot uses with its DataSource bean.
- */
+// Singleton pattern for the MongoDB connection.
 
 import mongoose from "mongoose";
 
@@ -15,10 +6,10 @@ export class Database {
   private static instance: Database;
   private isConnected: boolean = false;
 
-  /** Private constructor prevents direct instantiation (Singleton) */
-  private constructor() {}
+  // Private constructor prevents direct instantiation
+  private constructor() { }
 
-  /** Get the single Database instance */
+  // Get the single Database instance
   public static getInstance(): Database {
     if (!Database.instance) {
       Database.instance = new Database();
@@ -26,11 +17,7 @@ export class Database {
     return Database.instance;
   }
 
-  /**
-   * Connect to MongoDB with retry logic.
-   * In production, the initial connection attempt might fail if the
-   * database is still spinning up, so we retry a few times.
-   */
+  // Connect to MongoDB with retry logic
   public async connect(uri: string): Promise<void> {
     if (this.isConnected) {
       console.log("[Database] Already connected, skipping.");
@@ -59,7 +46,7 @@ export class Database {
     }
   }
 
-  /** Gracefully close the connection (used in shutdown hooks) */
+  // Gracefully close the connection
   public async disconnect(): Promise<void> {
     if (this.isConnected) {
       await mongoose.disconnect();
@@ -68,7 +55,7 @@ export class Database {
     }
   }
 
-  /** Simple sleep utility - avoids pulling in a whole library */
+  // Simple sleep utility
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }

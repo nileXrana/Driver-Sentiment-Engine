@@ -1,25 +1,10 @@
-/**
- * DriverRepository.ts
- * --------------------
- * Data Access Layer for Driver documents.
- * 
- * Following the Repository Pattern (same as Spring Data JPA):
- * - Controllers never touch the database directly.
- * - Services call repository methods.
- * - Repositories encapsulate all Mongoose queries.
- * 
- * This separation means if we ever switch from MongoDB to PostgreSQL,
- * only the repository layer needs to change.
- */
+// Data Access Layer for Driver documents.
 
 import { DriverModel } from "../models/Driver.model";
 import { DriverDocument } from "../types/model.types";
 
 export class DriverRepository {
-  /**
-   * Find a driver by their business ID (not MongoDB's _id).
-   * Returns null if the driver doesn't exist yet.
-   */
+  // Find a driver by their business ID
   public async findByDriverId(driverId: string): Promise<DriverDocument | null> {
     try {
       return await DriverModel.findOne({ driverId });
@@ -29,7 +14,7 @@ export class DriverRepository {
     }
   }
 
-  /** Retrieve all drivers, sorted by average score ascending (worst first) */
+  // Retrieve all drivers, sorted by average score ascending
   public async findAll(): Promise<DriverDocument[]> {
     try {
       return await DriverModel.find().sort({ averageScore: 1 });
@@ -39,7 +24,7 @@ export class DriverRepository {
     }
   }
 
-  /** Create a new driver record */
+  // Create a new driver record
   public async create(driverId: string, name: string): Promise<DriverDocument> {
     try {
       const driver = new DriverModel({
@@ -57,11 +42,7 @@ export class DriverRepository {
     }
   }
 
-  /**
-   * Atomic update of a driver's score.
-   * This is much safer than reading the driver, computing, and saving it back,
-   * which can cause race conditions if multiple feedbacks arrive simultaneously.
-   */
+  // Atomic update of a driver's score
   public async updateScoreAtomically(
     driverId: string,
     newScore: number,

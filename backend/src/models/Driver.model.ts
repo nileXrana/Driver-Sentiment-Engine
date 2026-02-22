@@ -1,12 +1,4 @@
-/**
- * Driver.model.ts
- * ----------------
- * Mongoose schema and model for the Driver collection.
- * 
- * Key Design:
- * - totalScore and totalFeedback enable O(1) rolling average updates.
- * - riskLevel is derived from averageScore for quick dashboard queries.
- */
+// Mongoose schema and model for the Driver collection.
 
 import { Schema, model } from "mongoose";
 import { DriverDocument } from "../types/model.types";
@@ -17,7 +9,7 @@ const DriverSchema = new Schema<DriverDocument>(
       type: String,
       required: true,
       unique: true,
-      index: true, // Index for fast lookups by driverId
+      index: true,
     },
     name: {
       type: String,
@@ -45,7 +37,7 @@ const DriverSchema = new Schema<DriverDocument>(
     },
   },
   {
-    timestamps: true, // Auto-manages createdAt and updatedAt
+    timestamps: true,
   }
 );
 

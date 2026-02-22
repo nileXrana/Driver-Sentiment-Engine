@@ -1,15 +1,5 @@
-/**
- * Admin Dashboard Page
- * 
- * Displays:
- *   1. A table of all drivers with live sentiment scores
- *   2. Risk level highlighting (red for HIGH)
- *   3. A score trend chart for the selected driver
- *   4. An alert list showing low-score warnings
- * 
- * Data is fetched from the backend and auto-refreshes every 10 seconds
- * so the admin sees near-real-time updates.
- */
+// Admin Dashboard
+// Displays driver stats, warnings, and chart. Auto-refreshes.
 
 "use client";
 
@@ -19,12 +9,12 @@ import DriverTable from "../../components/dashboard/DriverTable";
 import ScoreChart from "../../components/dashboard/ScoreChart";
 import { Driver, FeedbackHistoryItem } from "../../types";
 
-/** Refresh interval for auto-polling (10 seconds) */
+// Auto-refresh interval (10s)
 const REFRESH_INTERVAL_MS = 10000;
 
 export default function DashboardPage() {
   const chartRef = useRef<HTMLDivElement>(null);
-  // ─── State ─────────────────────────────────────
+  // State
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [sortBy, setSortBy] = useState<'driverId' | 'name' | 'score'>('driverId');
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
@@ -32,10 +22,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
-  /**
-   * Fetch all dashboard data (drivers + alerts).
-   * Wrapped in useCallback so it can be used in both useEffect and the refresh button.
-   */
+  // Fetch dashboard data
   const fetchDashboardData = useCallback(async (): Promise<void> => {
     try {
       const driverData = await ApiClient.getAllDrivers();
@@ -49,7 +36,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Initial fetch + auto-refresh polling
+  // Initial fetch and polling
   useEffect(() => {
     fetchDashboardData();
 
@@ -62,7 +49,7 @@ export default function DashboardPage() {
 
     try {
       const feedbackData = await ApiClient.getDriverFeedback(driverId);
-      // Ensure the history is sorted chronologically for the chart if not already
+      // Sort history chronologically
       const sortedHistory = feedbackData.sort((a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
@@ -72,7 +59,7 @@ export default function DashboardPage() {
       setSelectedDriverFeedback([]);
     }
 
-    // Scroll to chart after state updates
+    // Scroll to chart
     setTimeout(() => {
       if (chartRef.current) {
         chartRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -80,7 +67,7 @@ export default function DashboardPage() {
     }, 100);
   };
 
-  // ─── Summary Stats ────────────────────────────
+  // Summary Stats
   const totalDrivers = drivers.length;
   const positiveCount = drivers.filter((d: Driver) => d.riskLevel === "LOW" && d.totalFeedback >= 5).length;
   const neutralCount = drivers.filter((d: Driver) => d.riskLevel === "MEDIUM" && d.totalFeedback >= 5).length;
@@ -117,7 +104,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* ─── Summary Cards ──────────────────────── */}
+            {/* Summary Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-4 mb-3 sm:mb-8">
               <div className="p-1.5 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <p className="text-[10px] sm:text-sm text-gray-500 uppercase tracking-wider">Total Drivers</p>
@@ -143,7 +130,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ─── Driver Table ─────────────────────── */}
+            {/* Driver Table */}
             <div className="mb-5 sm:mb-8">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <h2 className="text-sm sm:text-base font-medium sm:font-semibold text-gray-900 tracking-tight">Driver Scores</h2>
@@ -172,7 +159,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* ─── Score Chart (shown when a driver is selected) ── */}
+            {/* Score Chart */}
             {selectedDriver && (
               <div ref={chartRef} className="mb-5 sm:mb-8 p-3 sm:p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <ScoreChart

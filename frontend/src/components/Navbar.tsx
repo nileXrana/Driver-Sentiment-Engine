@@ -1,8 +1,4 @@
-/**
- * Navbar.tsx
- * -----------
- * Responsive navigation bar. Compact on mobile, full links on desktop.
- */
+// Navigation Component
 
 "use client";
 
@@ -28,39 +24,39 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const isDashboard = pathname?.startsWith("/dashboard");
 
-  // Auth State
+  // Authentication
   const [isClient, setIsClient] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  // Read localStorage on mount (client-side only)
+  // Initialize auth
   useEffect(() => {
     setIsClient(true);
     const token = localStorage.getItem("authToken");
     const role = localStorage.getItem("authRole");
     setIsAuthenticated(!!token);
     setUserRole(role);
-  }, [pathname]); // Re-run when route changes to keep UI perfectly synchronized
+  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authRole");
     setIsAuthenticated(false);
     setUserRole(null);
-    window.location.href = "/"; // Force hard refresh to clear any cached states
+    window.location.href = "/";
   };
 
   return (
-    <nav className={`${isHome ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "sticky top-0 z-50 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 shadow-lg"}`}>
+    <nav className={`${isHome ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "sticky top-0 z-50 bg-linear-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 shadow-lg"}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-        {/* Logo / Title */}
+        {/* Branding */}
         <Link href="/" className="flex items-center gap-2">
           <span className={`text-base sm:text-xl font-bold truncate ${isHome ? "text-white" : "text-white"}`}>
             Driver Sentiment Engine
           </span>
         </Link>
 
-        {/* Right side: bell + hamburger (mobile) / bell + links (desktop) */}
+        {/* Navigation Actions */}
         <div className="flex items-center gap-1">
           {/* Hamburger button - mobile only */}
           {/* Mobile alert bell (shown only on dashboard) */}
@@ -83,10 +79,10 @@ export default function Navbar() {
             </svg>
           </button>
 
-          {/* Desktop nav links */}
+          {/* Desktop Links */}
           <div className="hidden sm:flex gap-1 items-center">
             {NAV_LINKS.map((link: NavLink) => {
-              // Strict Role-Based Visibility Guards
+              // Role visibility checks
               if (link.label === "Dashboard" && userRole === "EMPLOYEE") return null;
               if (link.label === "Give Feedback" && userRole === "ADMIN") return null;
 
@@ -99,7 +95,7 @@ export default function Navbar() {
                 : "bg-white/15 text-white";
 
               let targetHref = link.href;
-              // If completely logged out but trying to hit Dashboard, route to login
+              // Redirect unauthenticated dashboard access
               if (link.label === "Dashboard" && !isAuthenticated) {
                 targetHref = "/login";
               }
@@ -116,7 +112,7 @@ export default function Navbar() {
               );
             })}
 
-            {/* Desktop Auth Toggle */}
+            {/* Login/Logout Button */}
             {isClient && (
               <button
                 onClick={isAuthenticated ? handleLogout : () => window.location.href = "/login"}
@@ -130,19 +126,19 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Reserve space for notification bell so navbar doesn't shift when toggling dashboard */}
+          {/* Bell placeholder */}
           <div className="hidden sm:flex w-10 h-10 items-center justify-center">
             {isDashboard && isAuthenticated ? <NotificationBell /> : <div className="w-10 h-10" />}
           </div>
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile Menu */}
       {menuOpen && (
         <div className="sm:hidden px-4 pb-4">
           <div className="mt-1 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
             {NAV_LINKS.map((link: NavLink) => {
-              // Strict Role-Based Visibility Guards
+              // Role visibility checks
               if (link.label === "Dashboard" && userRole === "EMPLOYEE") return null;
               if (link.label === "Give Feedback" && userRole === "ADMIN") return null;
 
@@ -151,7 +147,7 @@ export default function Navbar() {
               const activeStyle = "bg-gray-900 text-white";
 
               let targetHref = link.href;
-              // If completely logged out but trying to hit Dashboard, route to login
+              // Redirect unauthenticated dashboard access
               if (link.label === "Dashboard" && !isAuthenticated) {
                 targetHref = "/login";
               }

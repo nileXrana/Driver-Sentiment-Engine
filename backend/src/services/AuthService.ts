@@ -2,10 +2,7 @@ import bcrypt from "bcryptjs";
 import { UserModel } from "../models/User.model";
 
 export class AuthService {
-    /**
-     * "Zero-Config" Seeder: Runs on server startup.
-     * Checks if any users exist. If not, creates the default Admin and Employee demo accounts.
-     */
+    // Seed demo users
     public static async seedDemoUsers(): Promise<void> {
         try {
             const userCount = await UserModel.countDocuments();

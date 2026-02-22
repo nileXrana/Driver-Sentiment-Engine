@@ -1,9 +1,4 @@
-/**
- * ScoreChart.tsx
- * ---------------
- * Line chart showing a driver's sentiment score trend over time.
- * Uses the 'recharts' library for simple, declarative charting.
- */
+// Score Trend Chart
 
 "use client";
 
@@ -19,7 +14,7 @@ import {
 import { ScoreChartProps } from "../../types";
 
 export default function ScoreChart({ driverName, feedbackHistory }: ScoreChartProps) {
-  // Transform feedback data into the shape recharts expects
+  // Format chart data
   const chartData = feedbackHistory.map((item, index) => ({
     name: `#${index + 1}`,
     score: item.sentimentScore,
@@ -36,7 +31,7 @@ export default function ScoreChart({ driverName, feedbackHistory }: ScoreChartPr
     );
   }
 
-  // Custom Tooltip Component
+  // Custom Tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;

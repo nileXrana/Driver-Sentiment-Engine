@@ -1,16 +1,4 @@
-/**
- * FeedbackController.ts
- * ----------------------
- * Handles HTTP requests related to feedback submission.
- * 
- * Follows the Single Responsibility Principle:
- * - Controller: Validates input, calls service, formats response
- * - Service: Contains business logic
- * - Repository: Handles data persistence
- * 
- * This is the same layering Spring Boot uses:
- *   @RestController → @Service → @Repository
- */
+// Feedback Controller
 
 import { Request, Response } from "express";
 import { FeedbackProcessorService } from "../services/FeedbackProcessorService";
@@ -32,12 +20,7 @@ export class FeedbackController {
     this.getDriverFeedback = this.getDriverFeedback.bind(this);
   }
 
-  /**
-   * GET /api/feedback/check?userName=X&driverId=DRV001&feedbackDate=2026-02-21
-   *
-   * Returns { exists: true/false } to let the frontend know if
-   * the user has already submitted feedback for this driver on this date.
-   */
+  // GET /api/feedback/check
   public async checkDuplicate(req: Request, res: Response): Promise<void> {
     try {
       const { userName, driverId, feedbackDate } = req.query;
@@ -60,11 +43,7 @@ export class FeedbackController {
     }
   }
 
-  /**
-   * GET /api/feedback/:driverId
-   * 
-   * Retrieves all feedback history for a specific driver.
-   */
+  // GET /api/feedback/:driverId
   public async getDriverFeedback(req: Request, res: Response): Promise<void> {
     try {
       const { driverId } = req.params;
@@ -82,12 +61,7 @@ export class FeedbackController {
     }
   }
 
-  /**
-   * POST /api/feedback
-   * 
-   * Accepts rider/marshal feedback, runs sentiment analysis,
-   * and enqueues the result for async processing.
-   */
+  // POST /api/feedback
   public async submitFeedback(req: Request, res: Response): Promise<void> {
     try {
       // Step 1: Extract and validate the request body
@@ -123,10 +97,7 @@ export class FeedbackController {
     }
   }
 
-  /**
-   * Validate the incoming feedback request.
-   * Returns an error message string if invalid, or null if valid.
-   */
+  // Validate incoming request
   private validateFeedbackRequest(body: SubmitFeedbackRequest): string | null {
     if (!body.driverId || typeof body.driverId !== "string") {
       return "Missing or invalid 'driverId'. Must be a non-empty string.";

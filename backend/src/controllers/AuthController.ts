@@ -5,10 +5,7 @@ import { UserModel } from "../models/User.model";
 import { LoginRequest } from "../types/request.types";
 
 export class AuthController {
-    /**
-     * Validates standard user login and issues a signed JWT containing 
-     * the user's role (ADMIN or EMPLOYEE).
-     */
+    // Validate login and issue JWT
     public async login(req: Request<{}, {}, LoginRequest>, res: Response): Promise<void> {
         try {
             const { email, password } = req.body;
@@ -47,7 +44,7 @@ export class AuthController {
                 return;
             }
 
-            // Give them a non-expiring JWT purely for demo simplicity (usually 1h or 24h)
+            // Issue JWT
             const token = jwt.sign(
                 { userId: user._id, role: user.role },
                 process.env.JWT_SECRET || "fallfack_secret_for_zero_config_demos",

@@ -1,8 +1,4 @@
-/**
- * DriverController.ts
- * --------------------
- * Handles HTTP requests for driver data (used by the admin dashboard).
- */
+// Driver Controller
 
 import { Request, Response } from "express";
 import { DriverService } from "../services/DriverService";
@@ -24,11 +20,7 @@ export class DriverController {
     this.getAlerts = this.getAlerts.bind(this);
   }
 
-  /**
-   * GET /api/drivers
-   * Returns all drivers with their current sentiment scores.
-   * Used by the admin dashboard to populate the driver table.
-   */
+  // GET /api/drivers
   public async getAllDrivers(_req: Request, res: Response): Promise<void> {
     try {
       const drivers = await this.driverService.getAllDrivers();
@@ -51,10 +43,7 @@ export class DriverController {
     }
   }
 
-  /**
-   * GET /api/drivers/:driverId
-   * Returns a single driver's details plus their score history.
-   */
+  // GET /api/drivers/:driverId
   public async getDriverById(req: Request, res: Response): Promise<void> {
     try {
       const { driverId } = req.params;
@@ -86,10 +75,7 @@ export class DriverController {
     }
   }
 
-  /**
-   * GET /api/alerts
-   * Returns all alerts. Optionally filtered by ?driverId=xxx query param.
-   */
+  // GET /api/alerts
   public async getAlerts(req: Request, res: Response): Promise<void> {
     try {
       const driverId = req.query.driverId as string | undefined;

@@ -1,14 +1,10 @@
-/**
- * FeedbackRepository.ts
- * ----------------------
- * Data Access Layer for Feedback documents.
- */
+// Data Access Layer for Feedback documents.
 
 import { FeedbackModel } from "../models/Feedback.model";
 import { FeedbackDocument } from "../types/model.types";
 
 export class FeedbackRepository {
-  /** Save a new feedback record to the database */
+  // Save a new feedback record to the database
   public async create(feedbackData: Partial<FeedbackDocument>): Promise<FeedbackDocument> {
     try {
       const feedback = new FeedbackModel(feedbackData);
@@ -19,10 +15,7 @@ export class FeedbackRepository {
     }
   }
 
-  /**
-   * Check if a user has already submitted feedback for a given driver on a given date.
-   * Returns true if a matching record exists.
-   */
+  // Check if a user has already submitted feedback for a given driver on a given date
   public async existsByUserDriverAndDate(
     userName: string,
     driverId: string,
@@ -37,7 +30,7 @@ export class FeedbackRepository {
     }
   }
 
-  /** Get all feedback for a specific driver, newest first */
+  // Get all feedback for a specific driver, newest first
   public async findByDriverId(driverId: string): Promise<FeedbackDocument[]> {
     try {
       return await FeedbackModel.find({ driverId }).sort({ createdAt: -1 });
@@ -47,7 +40,7 @@ export class FeedbackRepository {
     }
   }
 
-  /** Mark a feedback record as processed by the queue worker */
+  // Mark a feedback record as processed by the queue worker
   public async markAsProcessed(feedbackId: string): Promise<void> {
     try {
       await FeedbackModel.findByIdAndUpdate(feedbackId, { processed: true });

@@ -1,9 +1,4 @@
-/**
- * ConfigController.ts
- * --------------------
- * Handles feature flag configuration endpoints.
- * The frontend calls this on page load to know which UI sections to render.
- */
+// Config Controller
 
 import { Request, Response } from "express";
 import { FeatureFlagService } from "../services/FeatureFlagService";
@@ -18,11 +13,7 @@ export class ConfigController {
     this.getFlags = this.getFlags.bind(this);
   }
 
-  /**
-   * GET /api/config/flags
-   * Returns all feature flags as a JSON object.
-   * The frontend uses this to conditionally render UI components.
-   */
+  // GET /api/config/flags
   public async getFlags(_req: Request, res: Response): Promise<void> {
     try {
       const flags = this.featureFlagService.getFlags();

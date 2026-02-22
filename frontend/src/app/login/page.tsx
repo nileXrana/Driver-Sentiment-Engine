@@ -9,7 +9,7 @@ import { LoginPayload } from "../../types";
 export default function LoginPage() {
     const router = useRouter();
 
-    // Standard form state
+    // Form state
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Reusable login execution logic
+    // Login handler
     const executeLogin = async (payload: LoginPayload) => {
         setError("");
         setIsLoading(true);
@@ -25,15 +25,15 @@ export default function LoginPage() {
         try {
             const result = await ApiClient.login(payload);
 
-            // Store token (in a real app this would go to HttpOnly cookies or a robust state manager)
+            // Store tokens
             localStorage.setItem("authToken", result.token);
             localStorage.setItem("authRole", result.role);
 
-            // Role-based redirection
+            // Redirect based on role
             if (result.role === "ADMIN") {
-                router.push("/dashboard"); // Assuming the admin dashboard maps here
+                router.push("/dashboard");
             } else {
-                router.push("/feedback");  // Employees go to the feedback submission form
+                router.push("/feedback");
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Authentication failed. Please check credentials.");
@@ -53,7 +53,7 @@ export default function LoginPage() {
     return (
         <main className="min-h-screen flex items-center justify-center bg-gray-50/50 relative overflow-hidden">
 
-            {/* Background aesthetics */}
+            {/* Decorative background */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl" />
                 <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl" />
@@ -116,7 +116,7 @@ export default function LoginPage() {
                         </button>
                     </form>
 
-                    {/* ─── Zero-Config Demo Section ─── */}
+                    {/* Demo Login Shortcuts */}
                     <div className="mt-8 pt-6 border-t border-gray-100">
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide text-center mb-4">
                             For Demo Purpose:

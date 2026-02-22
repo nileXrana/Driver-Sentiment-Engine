@@ -1,12 +1,4 @@
-/**
- * Alert.model.ts
- * ---------------
- * Mongoose schema for driver performance alerts.
- * 
- * Alerts are created when a driver's rolling average drops
- * below the configured threshold. We store each alert for
- * audit trail purposes.
- */
+// Mongoose schema for driver performance alerts.
 
 import { Schema, model } from "mongoose";
 import { AlertDocument } from "../types/model.types";
@@ -37,7 +29,6 @@ const AlertSchema = new Schema<AlertDocument>(
   },
   {
     timestamps: true, // createdAt serves as our alert timestamp
-  }
-);
+  });
 
 export const AlertModel = model<AlertDocument>("Alert", AlertSchema);

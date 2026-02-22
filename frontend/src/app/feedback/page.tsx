@@ -1,7 +1,4 @@
-/**
- * Feedback Page - two-column layout on desktop.
- * Left: decorative image panel. Right: scrollable form.
- */
+// Feedback Page
 
 "use client";
 
@@ -24,7 +21,7 @@ export default function FeedbackPage() {
   };
 
   useEffect(() => {
-    // Auth Guard
+    // Check auth
     const token = localStorage.getItem("authToken");
     if (!token) {
       router.push("/login");
@@ -57,7 +54,7 @@ export default function FeedbackPage() {
   return (
     <div className="h-[calc(100vh-4rem)] overflow-hidden bg-blue-50/40 flex flex-col lg:flex-row">
 
-      {/* Top alert (fixed) */}
+      {/* Toast Notification */}
       {topAlert && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div className="flex items-center gap-3 p-3 bg-green-600 text-white rounded-xl shadow-lg">
@@ -69,7 +66,7 @@ export default function FeedbackPage() {
         </div>
       )}
 
-      {/* ── LEFT: Image panel (desktop only) ─────────────────────────── */}
+      {/* Left Column: Visuals */}
       <div className="hidden lg:flex lg:w-1/2 h-full shrink-0 relative flex-col overflow-hidden bg-gray-900">
         <Image
           src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&q=80"
@@ -82,7 +79,7 @@ export default function FeedbackPage() {
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-gray-950/30 to-transparent" />
 
-        {/* Text content anchored to bottom */}
+        {/* Hero Text */}
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-xs font-medium mb-3">
             ⭐ Driver Sentiment Engine
@@ -94,7 +91,7 @@ export default function FeedbackPage() {
             Every rating and comment you leave is analysed in real time to flag safety concerns and reward excellent drivers.
           </p>
 
-          {/* Trust indicators */}
+          {/* Badges */}
           <div className="mt-4 flex items-center gap-5 text-white/60 text-xs">
             <span className="flex items-center gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -105,7 +102,7 @@ export default function FeedbackPage() {
         </div>
       </div>
 
-      {/* ── RIGHT: Form panel ────────────────────────────────────────── */}
+      {/* Right Column: Form */}
       <div className="flex-1 min-h-0 overflow-y-auto py-8 px-4 lg:px-10">
         <div className="w-full max-w-lg mx-auto">
 
@@ -125,7 +122,7 @@ export default function FeedbackPage() {
             </div>
           )}
 
-          {/* Backend warning */}
+          {/* Error Message */}
           {error && (
             <div className="mb-5 flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>

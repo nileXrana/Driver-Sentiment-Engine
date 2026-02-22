@@ -1,8 +1,4 @@
-/**
- * Landing Page - single-screen, no scroll.
- * Full viewport hero with real cab imagery and a clear CTA.
- * Desktop: left text + right image grid. Mobile: stacked.
- */
+// Landing Page
 
 "use client";
 
@@ -14,12 +10,12 @@ import { useRouter } from "next/navigation";
 export default function HomePage() {
   const router = useRouter();
 
-  // Auth State
+  // Authentication
   const [isClient, setIsClient] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  // Read localStorage on mount (client-side only)
+  // Initialize auth
   useEffect(() => {
     setIsClient(true);
     const token = localStorage.getItem("authToken");
@@ -45,7 +41,7 @@ export default function HomePage() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* ── Background: looping video ─────────────── */}
+      {/* Background Video */}
       <video
         className="absolute inset-0 h-full w-full object-cover brightness-110 saturate-110"
         autoPlay
@@ -56,14 +52,14 @@ export default function HomePage() {
         <source src="/homeVideo.mp4" type="video/mp4" />
       </video>
 
-      {/* ── Dark gradient overlay ─────────────────── */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-gray-950/65 via-gray-950/45 to-gray-950/20" />
 
-      {/* ── Two-column layout ─────────────────────── */}
+      {/* Main Layout */}
       <div className="relative z-10 h-full max-w-6xl mx-auto px-6 flex items-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-          {/* ── LEFT: Text + CTAs ─────────────────── */}
+          {/* Left Column: Text & Buttons */}
           <div>
             <span className="font-[family-name:var(--font-inter)] inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-blue-300 text-xs font-semibold tracking-widest uppercase mb-6">
               Trusted Mobility Insights
@@ -81,7 +77,7 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              {/* Dynamic Auth Button - Placed to the LEFT of Give Feedback */}
+              {/* Conditional Auth Button */}
               {isClient && (
                 <button
                   onClick={handleAuthAction}
@@ -102,10 +98,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* ── RIGHT (desktop) / Bottom (mobile): image mosaic ── */}
+          {/* Right Column: Image Grid */}
           <div className="flex flex-col gap-3 lg:gap-3 items-center lg:items-end justify-center lg:justify-start mt-4 lg:mt-0">
 
-            {/* ── Desktop: irregular mosaic ───────── */}
+            {/* Desktop Grid */}
             <div className="hidden lg:grid grid-cols-6 auto-rows-[50px] gap-3 w-full max-w-md">
               <div className="relative col-span-4 row-span-3 rounded-2xl overflow-hidden border-2 border-white/15 shadow-2xl opacity-75">
                 <Image
@@ -157,9 +153,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* ── Mobile: arranged mixed-size grid ── */}
+            {/* Mobile Grid */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:hidden w-full">
-              {/* Row 1: one large + two stacked */}
+              {/* Top Row */}
               <div className="relative col-span-2 row-span-2 h-36 sm:h-44 rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
                   src="/homeImg/img1.jpg"
@@ -184,7 +180,7 @@ export default function HomePage() {
                   className="object-cover"
                 />
               </div>
-              {/* Row 2: three equal */}
+              {/* Bottom Row */}
               <div className="relative h-20 sm:h-24 rounded-xl overflow-hidden border-2 border-white/15 shadow-xl opacity-75">
                 <Image
                   src="/homeImg/img4.png"

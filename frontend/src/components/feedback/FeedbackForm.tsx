@@ -1,14 +1,4 @@
-/**
- * FeedbackForm.tsx
- * -----------------
- * Section-based feedback form with star ratings + text comments.
- *
- * Design decisions:
- * - CONFIG object controls which sections render (feature flags).
- * - A single `formData` state object tracks all ratings and comments.
- * - Comment text is the primary input for the sentiment analysis engine.
- * - Star ratings provide structured sentiment data alongside free text.
- */
+// Feedback Form
 
 "use client";
 
@@ -16,15 +6,14 @@ import { useState, useEffect } from "react";
 import { ApiClient } from "../../lib/ApiClient";
 import { FeedbackFormProps, SubmitFeedbackPayload, FeedbackResult } from "../../types";
 
-// ─── Feature flag config ─────────────────────────────────────────────────────
-// Override defaults with prop values when the backend is available.
+// Feature Flags
 const DEFAULT_CONFIG = {
   enableDriver: true,
   enableMarshal: false,
   enableApp: false,
 };
 
-// ─── Strict types ────────────────────────────────────────────────────────────
+// Types
 interface FeedbackData {
   // User info
   userName: string;
@@ -48,13 +37,11 @@ interface StarRatingProps {
   label: string;
 }
 
-// ─── Date helpers ────────────────────────────────────────────────────────────
-// Returns "YYYY-MM-DD" for today in the user's local timezone
-// DEV OVERRIDE: Forcing today to be Saturday for testing
+// Date Helpers
 function getTodayDate(): string {
   const d = new Date();
-  const day = d.getDay(); // 0 is Sunday
-  if (day === 0) { // If it's Sunday
+  const day = d.getDay();
+  if (day === 0) {
     const sat = new Date(d);
     sat.setDate(d.getDate() - 1);
     return sat.toISOString().slice(0, 10);
@@ -62,30 +49,25 @@ function getTodayDate(): string {
   return d.toISOString().slice(0, 10);
 }
 
-// Returns true if today is Saturday (6) or Sunday (0)
 function isTodayWeekend(): boolean {
   const day = new Date().getDay();
   return day === 0 || day === 6;
 }
 
-// Returns true if the given date string (YYYY-MM-DD) is a working day (Mon-Fri)
 function isWorkingDay(dateStr: string): boolean {
   const d = new Date(dateStr + "T12:00:00");
-  const day = d.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const day = d.getDay();
   return day >= 1 && day <= 5;
 }
 
-// Returns "YYYY-MM-DD" for the previous working day (Mon→Fri, skips weekends)
 function getPreviousWorkingDay(): string {
   return getPreviousDay();
 }
 
-// Returns the previous calendar day (always yesterday)
-// DEV OVERRIDE: Forcing yesterday to be Friday if today is Sunday
 function getPreviousDay(): string {
   const d = new Date();
   const day = d.getDay();
-  if (day === 0) { // If today is Sunday
+  if (day === 0) {
     const fri = new Date(d);
     fri.setDate(d.getDate() - 2);
     return fri.toISOString().slice(0, 10);
@@ -96,13 +78,12 @@ function getPreviousDay(): string {
   return prev.toISOString().slice(0, 10);
 }
 
-// Format "YYYY-MM-DD" to a readable label like "Fri, 20 Feb"
 function formatDateLabel(dateStr: string): string {
-  const d = new Date(dateStr + "T12:00:00"); // noon to avoid timezone shift
+  const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 }
 
-// ─── Star Rating sub-component ───────────────────────────────────────────────
+// Star Rating Component
 function StarRating({ value, onChange, label }: StarRatingProps) {
   const [hovered, setHovered] = useState<number>(0);
 
@@ -142,7 +123,7 @@ function StarRating({ value, onChange, label }: StarRatingProps) {
   );
 }
 
-// ─── Section card (extracted to prevent re-mount on parent re-render) -
+// Section Card Component
 const INPUT_CLASS =
   "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent focus:bg-white outline-none transition text-gray-900 placeholder:text-gray-400 text-sm";
 
@@ -187,16 +168,16 @@ function SectionCard({
   );
 }
 
-// ─── Main component ──────────────────────────────────────────────────────────
+// Form Component
 export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormProps) {
-  // Merge flag prop values into the config (runtime overrides compile-time defaults)
+  // Merge flags
   const CONFIG = {
     enableDriver: featureFlags?.enableRiderFeedback ?? DEFAULT_CONFIG.enableDriver,
     enableMarshal: featureFlags?.enableMarshalFeedback ?? DEFAULT_CONFIG.enableMarshal,
     enableApp: featureFlags?.enableAppFeedback ?? DEFAULT_CONFIG.enableApp,
   };
 
-  // ─── Single state object for all form data ──────────────────
+  // Form state
   const [formData, setFormData] = useState<FeedbackData>({
     userName: "",
     driverId: "",
@@ -209,7 +190,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
     appComment: "",
   });
 
-  // ─── Feedback date selection ─────────────────────────────────
+  // Date selection
   const todayDate = getTodayDate();
   const prevDate = getPreviousDay();
   const prevWorkDay = getPreviousWorkingDay();
@@ -222,19 +203,18 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
   const [result, setResult] = useState<FeedbackResult | null>(null);
   const [error, setError] = useState<string>("");
 
-  // ─── Driver name auto-lookup ─────────────────────────────────
-  // States to show lookup status next to the Driver Name field
+  // Driver lookup
   const [lookupStatus, setLookupStatus] = useState<"idle" | "loading" | "found" | "not_found">("idle");
 
   useEffect(() => {
-    // Only look up if the ID looks like a real driver ID (non-empty)
+
     if (!formData.driverId.trim()) {
       setLookupStatus("idle");
       update("driverName", "");
       return;
     }
 
-    // Debounce: wait 500ms after the user stops typing before hitting the API
+    // Debounce lookup
     const timer = setTimeout(async () => {
       setLookupStatus("loading");
       try {
@@ -247,25 +227,25 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       }
     }, 500);
 
-    // Cleanup: cancel the timer if the user keeps typing
+
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.driverId]);
 
-  // ─── Helpers ────────────────────────────────────────────────
+  // Helpers
   const update = <K extends keyof FeedbackData>(key: K, value: FeedbackData[K]) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
 
   const inputClass =
     "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent focus:bg-white outline-none transition text-gray-900 placeholder:text-gray-400 text-sm";
 
-  // ─── Submit ─────────────────────────────────────────────────
+  // Submission
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError("");
     setResult(null);
 
-    // Validate required driver info
+    // Validation
     if (!formData.userName.trim()) {
       setError("Please enter your name.");
       return;
@@ -275,7 +255,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       return;
     }
 
-    // Validate that ALL enabled sections have both a rating and a comment
+
     if (CONFIG.enableDriver) {
       if (formData.driverRating === 0) {
         setError("Please give a star rating for your Driver.");
@@ -309,7 +289,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       }
     }
 
-    // Build the feedback text: combine all comments with labels for richer analysis
+    // Combine feedback text
     const commentParts: string[] = [];
     if (CONFIG.enableDriver && formData.driverRating > 0)
       commentParts.push(`Rating (${formData.driverRating}/5): ${formData.driverComment}`);
@@ -329,10 +309,9 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
       driverFeedbackText: formData.driverComment.trim() || undefined,
     };
 
-    // Log the final JSON payload (simulating API call structure)
     console.log("[FeedbackForm] Submitting payload:", JSON.stringify(payload, null, 2));
 
-    // Prevent submissions on non-working days
+    // Prevent weekend submissions
     if (!isWorkingDay(selectedDate)) {
       setError("Feedback can only be submitted for working days (Mon-Fri). Please try on a working day.");
       return;
@@ -341,7 +320,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
     try {
       setIsSubmitting(true);
 
-      // ─── Duplicate check: has this user already given feedback for this driver on this date? ───
+      // Duplicate check
       const alreadyExists = await ApiClient.checkFeedbackExists(
         formData.userName.trim(),
         formData.driverId.trim(),
@@ -355,18 +334,18 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
 
       const feedbackResult = await ApiClient.submitFeedback(payload);
       setResult(feedbackResult);
-      // Reset comment fields after success; keep driver info
+      // Reset form
       setFormData((prev) => ({
         ...prev,
         driverRating: 0, driverComment: "",
         marshalRating: 0, marshalComment: "",
         appRating: 0, appComment: "",
       }));
-      // Notify parent (page) to show global/top alert
+      // Notify parent
       try {
         onSuccess?.("Feedback submitted.");
       } catch {
-        /* ignore callback errors */
+
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit feedback.");
@@ -375,12 +354,12 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
     }
   };
 
-  // ─── Render ─────────────────────────────────────────────────
+  // Render
   return (
     <div>
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* ── Your Name ────────────────────────────── */}
+        {/* User Name */}
         <div>
           <label htmlFor="userName" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
             Your Name <span className="text-red-400">*</span>
@@ -394,13 +373,13 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
           />
         </div>
 
-        {/* ── Feedback Date toggle ─────────────────── */}
+        {/* Date Selection */}
         <div>
           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
             Feedback For <span className="text-red-400">*</span>
           </label>
           <p className="text-xs text-amber-600 mb-2">Feedback for weekdays (Mon–Fri) only.</p>
-          {/* Weekend helper message removed per request */}
+
           <div className="flex gap-2">
             <button
               type="button"
@@ -427,7 +406,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
           </div>
         </div>
 
-        {/* ── Driver info row ──────────────────────── */}
+        {/* Driver Info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="driverId" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
@@ -464,7 +443,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
           </div>
         </div>
 
-        {/* ── Driver section ────────────────────────── */}
+        {/* Driver Rating */}
         {CONFIG.enableDriver && (
           <SectionCard
             title="Rate your Driver"
@@ -477,7 +456,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
           />
         )}
 
-        {/* ── Marshal section (hidden by default) ───── */}
+        {/* Marshal Rating */}
         {CONFIG.enableMarshal && (
           <SectionCard
             title="Rate the Marshal"
@@ -490,7 +469,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
           />
         )}
 
-        {/* ── App section (hidden by default) ──────── */}
+        {/* App Rating */}
         {CONFIG.enableApp && (
           <SectionCard
             title="App Experience"
@@ -503,14 +482,14 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
           />
         )}
 
-        {/* ── Error ─────────────────────────────────── */}
+        {/* Error */}
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
             {error}
           </div>
         )}
 
-        {/* ── Submit ────────────────────────────────── */}
+        {/* Submit */}
         <div className="border-t border-gray-100 pt-4">
           <button
             type="submit"
@@ -532,7 +511,7 @@ export default function FeedbackForm({ featureFlags, onSuccess }: FeedbackFormPr
 
       </form>
 
-      {/* Submission confirmation is handled by parent via onSuccess (top alert) */}
+
     </div>
   );
 }

@@ -1,16 +1,4 @@
-/**
- * FeedbackProcessorService.ts
- * ----------------------------
- * The Queue Worker — orchestrates the entire feedback pipeline.
- * 
- * Flow:
- *   1. API receives feedback → enqueues it (non-blocking, fast response)
- *   2. This worker polls the queue on an interval
- *   3. For each item: save to DB → update driver score → check alerts
- * 
- * This decouples the "accept feedback" step from the "process feedback" step.
- * The user gets an instant response, and heavy processing happens async.
- */
+// Feedback Processor Worker
 
 import { InMemoryQueue } from "./InMemoryQueue";
 import { SentimentAnalysisService } from "./SentimentAnalysisService";
@@ -20,7 +8,7 @@ import { FeedbackRepository } from "../repositories/FeedbackRepository";
 import { SubmitFeedbackRequest } from "../types/request.types";
 import { SentimentResult } from "../interfaces";
 
-/** Shape of items sitting in the queue waiting to be processed */
+// Queued feedback item shape
 interface QueuedFeedbackItem {
   request: SubmitFeedbackRequest;
   sentimentResult: SentimentResult;
@@ -34,10 +22,10 @@ export class FeedbackProcessorService {
   private readonly alertService: AlertService;
   private readonly feedbackRepository: FeedbackRepository;
 
-  /** Handle for the polling interval (so we can stop it on shutdown) */
+  // Interval handle
   private workerInterval: ReturnType<typeof setInterval> | null = null;
 
-  /** Track how many items we've processed (useful for monitoring) */
+  // Track processed count
   private processedCount: number = 0;
 
   constructor(
@@ -54,15 +42,7 @@ export class FeedbackProcessorService {
     this.feedbackRepository = feedbackRepository;
   }
 
-  /**
-   * Submit a new feedback item.
-   * 
-   * This is called by the controller. It:
-   *   1. Runs sentiment analysis (fast, in-memory, no I/O)
-   *   2. Ensures the driver exists in the database
-   *   3. Enqueues the item for async processing
-   *   4. Returns immediately with the sentiment result
-   */
+  // Submit new feedback item
   public async submitFeedback(request: SubmitFeedbackRequest): Promise<{
     sentimentResult: SentimentResult;
     queuePosition: number;
@@ -90,11 +70,7 @@ export class FeedbackProcessorService {
     return { sentimentResult, queuePosition };
   }
 
-  /**
-   * Start the background worker that polls the queue.
-   * Uses setInterval for simplicity — in production, we'd use a proper
-   * job scheduler or a message broker consumer.
-   */
+  // Start background worker
   public startWorker(pollIntervalMs: number = 2000): void {
     console.log(`[FeedbackProcessor] Starting queue worker (polling every ${pollIntervalMs}ms)...`);
 
@@ -103,7 +79,7 @@ export class FeedbackProcessorService {
     }, pollIntervalMs);
   }
 
-  /** Stop the worker (for graceful shutdown) */
+  // Stop worker
   public stopWorker(): void {
     if (this.workerInterval) {
       clearInterval(this.workerInterval);
@@ -112,14 +88,7 @@ export class FeedbackProcessorService {
     }
   }
 
-  /**
-   * Process one item from the queue.
-   * 
-   * Why process one at a time instead of draining the whole queue?
-   * - Prevents long-running loops that block the event loop
-   * - Each item gets its own error boundary (one failure doesn't kill the batch)
-   * - Easier to reason about and debug
-   */
+  // Process next item from queue
   private async processNextItem(): Promise<void> {
     // Guard: Don't attempt to dequeue from an empty queue
     if (this.feedbackQueue.isEmpty()) {

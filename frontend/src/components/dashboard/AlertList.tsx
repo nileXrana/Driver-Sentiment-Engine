@@ -1,9 +1,4 @@
-/**
- * AlertList.tsx
- * --------------
- * Displays a list of system alerts for low-scoring drivers.
- * Used in the admin dashboard's alert section.
- */
+// Alert List Component
 
 "use client";
 
@@ -25,15 +20,15 @@ export default function AlertList({ alerts }: AlertListProps) {
           key={alert._id}
           className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"
         >
-          {/* Warning icon */}
-          <span className="text-red-500 text-xl flex-shrink-0 mt-0.5">&#9888;</span>
+          {/* Icon */}
+          <span className="text-red-500 text-xl shrink-0 mt-0.5">&#9888;</span>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold text-red-800 text-sm">
                 {alert.driverName} ({alert.driverId})
               </span>
-              <span className="text-xs text-red-500 flex-shrink-0">
+              <span className="text-xs text-red-500 shrink-0">
                 {new Date(alert.createdAt).toLocaleString()}
               </span>
             </div>

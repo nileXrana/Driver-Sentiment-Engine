@@ -1,14 +1,10 @@
-/**
- * AlertRepository.ts
- * -------------------
- * Data Access Layer for Alert documents.
- */
+// Data Access Layer for Alert documents.
 
 import { AlertModel } from "../models/Alert.model";
 import { AlertDocument } from "../types/model.types";
 
 export class AlertRepository {
-  /** Create a new alert record */
+  // Create a new alert record
   public async create(alertData: Partial<AlertDocument>): Promise<AlertDocument> {
     try {
       const alert = new AlertModel(alertData);
@@ -19,10 +15,7 @@ export class AlertRepository {
     }
   }
 
-  /**
-   * Find the most recent alert for a driver.
-   * Used to check cooldown — if the last alert was too recent, we skip.
-   */
+  // Find the most recent alert for a driver
   public async findLatestByDriverId(driverId: string): Promise<AlertDocument | null> {
     try {
       return await AlertModel.findOne({ driverId }).sort({ createdAt: -1 });
@@ -32,7 +25,7 @@ export class AlertRepository {
     }
   }
 
-  /** Get all alerts, optionally filtered by driver */
+  // Get all alerts, optionally filtered by driver
   public async findAll(driverId?: string): Promise<AlertDocument[]> {
     try {
       const filter = driverId ? { driverId } : {};

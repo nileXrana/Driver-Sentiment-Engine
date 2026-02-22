@@ -1,11 +1,4 @@
-/**
- * NotificationBell.tsx
- * ---------------------
- * Global notification bell that lives in the Navbar.
- * Fetches alerts every 10 seconds and shows unresolved count as a badge.
- * Clicking the bell reveals a dropdown with each alert and a "Resolve" button.
- * Resolved alerts are persisted in localStorage so they survive page refreshes.
- */
+// Global Notification Bell
 
 "use client";
 
@@ -16,7 +9,7 @@ import { Alert } from "../types";
 const POLL_INTERVAL_MS = 10_000;
 const STORAGE_KEY = "resolved_alerts";
 
-/** Read resolved IDs from localStorage */
+/** Read resolved from localStorage */
 function loadResolved(): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
@@ -27,7 +20,7 @@ function loadResolved(): Set<string> {
   }
 }
 
-/** Persist resolved IDs to localStorage */
+/** Save resolved to localStorage */
 function saveResolved(ids: Set<string>): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
@@ -42,7 +35,7 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Hydrate resolved set from localStorage once on mount
+  // Initialize resolved set
   useEffect(() => {
     setResolvedIds(loadResolved());
   }, []);
@@ -74,8 +67,7 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ─── Derived values ───────────────────────────
-  // State to track driver risk levels to determine bell status
+  // Driver risk states
   const [drivers, setDrivers] = useState<{ driverId: string; totalFeedback: number }[]>([]);
   useEffect(() => {
     const fetchDrivers = async () => {
@@ -85,16 +77,16 @@ export default function NotificationBell() {
     fetchDrivers();
   }, []);
 
-  // Only show alerts for drivers with >= 5 feedbacks
+  // Filter alerts by driver feedback count (>= 5)
   const unresolvedAlerts = alerts.filter((a) => {
     if (resolvedIds.has(a._id)) return false;
-    // Alert only matters if the driver has >= 5 feedback
+
     const driver = drivers.find(d => d.driverId === a.driverId);
     return driver && driver.totalFeedback >= 5;
   });
   const unresolvedCount = unresolvedAlerts.length;
 
-  // ─── Handlers ─────────────────────────────────
+  // Handlers
   const handleResolve = (alertId: string) => {
     setResolvedIds((prev) => {
       const next = new Set(prev);
@@ -106,7 +98,7 @@ export default function NotificationBell() {
 
   const toggleDropdown = () => setOpen((prev) => !prev);
 
-  // ─── Time-ago helper ──────────────────────────
+  // Time formatter
   function timeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60_000);
@@ -152,7 +144,7 @@ export default function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 max-h-[70vh] rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 max-h-[70vh] rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden z-60 animate-in fade-in slide-in-from-top-2">
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900">
@@ -178,7 +170,7 @@ export default function NotificationBell() {
                 >
                   <div className="flex items-start gap-3">
                     {/* Red dot indicator */}
-                    <span className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full bg-red-500" />
+                    <span className="mt-1.5 shrink-0 w-2 h-2 rounded-full bg-red-500" />
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
@@ -188,7 +180,7 @@ export default function NotificationBell() {
                             {alert.driverId}
                           </span>
                         </p>
-                        <span className="text-[11px] text-gray-400 flex-shrink-0">
+                        <span className="text-[11px] text-gray-400 shrink-0">
                           {timeAgo(alert.createdAt)}
                         </span>
                       </div>

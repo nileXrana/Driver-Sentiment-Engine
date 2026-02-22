@@ -1,12 +1,4 @@
-/**
- * Feedback.model.ts
- * ------------------
- * Mongoose schema for storing rider/marshal feedback.
- * 
- * Each feedback record stores the raw text AND the computed
- * sentiment result. This means we never need to re-analyze
- * old feedback — the score is computed once and stored.
- */
+// Mongoose schema for rider/marshal feedback and computed sentiment results.
 
 import { Schema, model } from "mongoose";
 import { FeedbackDocument } from "../types/model.types";
@@ -16,7 +8,7 @@ const FeedbackSchema = new Schema<FeedbackDocument>(
     driverId: {
       type: String,
       required: true,
-      index: true, // We often query "all feedback for driver X"
+      index: true,
     },
     feedbackText: {
       type: String,
@@ -29,7 +21,7 @@ const FeedbackSchema = new Schema<FeedbackDocument>(
       trim: true,
     },
     feedbackDate: {
-      type: String,   // "YYYY-MM-DD" format
+      type: String,
       required: true,
       index: true,
     },

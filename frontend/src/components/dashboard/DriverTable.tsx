@@ -1,18 +1,10 @@
-/**
- * DriverTable.tsx
- * ----------------
- * Displays all drivers with their live sentiment scores.
- * 
- * Key behavior:
- * - Rows are color-coded by sentiment (Negative = red, Neutral = yellow, Positive = green)
- * - Clicking a row selects the driver for detailed view
- */
+// Driver table list
 
 "use client";
 
 import { DriverTableProps, Driver } from "../../types";
 
-/** Map risk level to sentiment label */
+// Get sentiment label
 const getSentiment = (riskLevel: Driver["riskLevel"]): "Negative" | "Neutral" | "Positive" => {
   switch (riskLevel) {
     case "HIGH": return "Negative";

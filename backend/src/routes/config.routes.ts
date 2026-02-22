@@ -1,8 +1,4 @@
-/**
- * config.routes.ts
- * -----------------
- * Route definitions for configuration endpoints.
- */
+// Config routes
 
 import { Router } from "express";
 import { ConfigController } from "../controllers/ConfigController";
@@ -10,7 +6,7 @@ import { ConfigController } from "../controllers/ConfigController";
 export function createConfigRoutes(configController: ConfigController): Router {
   const router = Router();
 
-  // GET /api/config/flags — Retrieve feature flags
+  // GET /api/config/flags
   router.get("/flags", configController.getFlags);
 
   return router;

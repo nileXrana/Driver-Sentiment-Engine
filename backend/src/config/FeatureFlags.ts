@@ -1,12 +1,4 @@
-/**
- * FeatureFlags.ts
- * ----------------
- * Static configuration for feature flags.
- * 
- * In a real system, these would come from a database or a service
- * like LaunchDarkly. For our MVP, a simple config object works.
- * The frontend fetches these on load and conditionally renders UI.
- */
+// Static configuration for feature flags.
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -14,16 +6,14 @@ import * as dotenv from 'dotenv';
 import { FeatureFlagResponse } from "../types/response.types";
 
 export class FeatureFlags {
-  /**
-   * Current flag values.
-   */
+  // Current flag values
   private static flags: Partial<FeatureFlagResponse> = {
     enableTripIdField: false, // Deprecated
     enableSentimentDetails: true,
     enableAlertDashboard: true,
   };
 
-  /** Get all flags (evaluating .env at runtime in case dotenv loads after static init) */
+  // Get all flags
   public static getAll(): FeatureFlagResponse {
     // Hot-reload .env from disk so admin toggles apply instantly without server restart
     try {
@@ -46,7 +36,7 @@ export class FeatureFlags {
     } as FeatureFlagResponse;
   }
 
-  /** Update a specific flag at runtime */
+  // Update a specific flag at runtime
   public static setFlag(key: keyof FeatureFlagResponse, value: boolean): void {
     this.flags[key] = value;
     console.log(`[FeatureFlags] Updated '${key}' to ${value}`);
