@@ -111,11 +111,7 @@ export class SentimentAnalysisService implements ISentimentAnalyzer {
     }
 
     // Ratio ranges from -1.0 (all negative) to +1.0 (all positive)
-    if(positiveCount <= 0){
-      positiveCount = 0;
-      negativeCount = negativeCount/2;
-    }
-    const ratio = ((positiveCount*2) - (negativeCount*3)) / sentimentWordCount;
+    const ratio = ((positiveCount) - (negativeCount)) / sentimentWordCount;
 
     // Map the -1 to +1 range onto 1 to 5
     // Formula: score = (ratio + 1) / 2 * 4 + 1
